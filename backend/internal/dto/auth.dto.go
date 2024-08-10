@@ -18,7 +18,3 @@ type IssueSTRequest struct {
 	UserID     string `json:"user_id"`
 	ServiceUrl string `json:"service_url"`
 }
-
-type IssueSTResponse struct {
-	ServiceTicket *ServiceTicket `json:"service_ticket"`
-}
