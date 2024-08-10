@@ -50,7 +50,7 @@ func (s *serviceImpl) GetGoogleLoginUrl(_ context.Context, serviceUrl string) (s
 	parameters.Add("scope", strings.Join(s.oauthConfig.Scopes, " "))
 	parameters.Add("redirect_uri", s.oauthConfig.RedirectURL)
 	parameters.Add("response_type", "code")
-	parameters.Add("service", serviceUrl)
+	parameters.Add("state", serviceUrl)
 	URL.RawQuery = parameters.Encode()
 	loginUrl := URL.String()
 

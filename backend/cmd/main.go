@@ -31,13 +31,6 @@ func main() {
 		panic(fmt.Sprintf("Failed to create validator: %v", err))
 	}
 
-	corsHandler := config.MakeCorsConfig(conf)
-	r := router.New(conf, corsHandler)
-
-	if err := r.Run(fmt.Sprintf(":%v", conf.App.Port)); err != nil {
-		log.Fatal("unable to start server")
-	}
-
 	userRepo := user.NewRepository(db)
 	userSvc := user.NewService(userRepo, log.Named("userSvc"))
 
@@ -48,7 +41,14 @@ func main() {
 	authSvc := auth.NewService(oauthConfig, oauthClient, userSvc, ticketSvc, log.Named("authSvc"))
 	authHdr := auth.NewHandler(authSvc, validate, log)
 
+	corsHandler := config.MakeCorsConfig(conf)
+	r := router.New(conf, corsHandler)
+
 	r.V1Get("/auth/google-url", authHdr.GetGoogleLoginUrl)
 	r.V1Get("/auth/verify-google", authHdr.VerifyGoogleLogin)
+
+	if err := r.Run(fmt.Sprintf(":%v", conf.App.Port)); err != nil {
+		log.Fatal("unable to start server")
+	}
 
 }

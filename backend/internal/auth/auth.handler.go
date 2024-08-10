@@ -30,6 +30,7 @@ func (h *handlerImpl) GetGoogleLoginUrl(c context.Ctx) {
 	serviceUrl := c.Query("service")
 	if serviceUrl == "" {
 		c.BadRequestError("query parameter 'service' not found")
+		return
 	}
 
 	res, apperr := h.svc.GetGoogleLoginUrl(c.RequestContext(), serviceUrl)
@@ -45,11 +46,13 @@ func (h *handlerImpl) VerifyGoogleLogin(c context.Ctx) {
 	code := c.Query("code")
 	if code == "" {
 		c.BadRequestError("query parameter 'code' not found")
+		return
 	}
 
-	serviceUrl := c.Query("service")
+	serviceUrl := c.Query("state")
 	if serviceUrl == "" {
-		c.BadRequestError("query parameter 'service' not found")
+		c.BadRequestError("query parameter 'state' not found")
+		return
 	}
 
 	req := &dto.VerifyGoogleLoginRequest{
