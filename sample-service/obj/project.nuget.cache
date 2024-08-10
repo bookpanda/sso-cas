@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "H2ccVtFN2Xh9llQUqM2Rq57NRmyt8EiBCPD64LWJ5sJkljoFEM8qEi3QxMggRCggg5ho0N4Nwi3NGc6Bi4IveA==",
+  "success": true,
+  "projectFilePath": "/Users/idhibhatpankam/Code/personal-projects/cas-sso/sample-service/sample-service.csproj",
+  "expectedPackageFiles": [
+    "/Users/idhibhatpankam/.nuget/packages/microsoft.extensions.apidescription.server/6.0.5/microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
+    "/Users/idhibhatpankam/.nuget/packages/microsoft.openapi/1.2.3/microsoft.openapi.1.2.3.nupkg.sha512",
+    "/Users/idhibhatpankam/.nuget/packages/swashbuckle.aspnetcore/6.4.0/swashbuckle.aspnetcore.6.4.0.nupkg.sha512",
+    "/Users/idhibhatpankam/.nuget/packages/swashbuckle.aspnetcore.swagger/6.4.0/swashbuckle.aspnetcore.swagger.6.4.0.nupkg.sha512",
+    "/Users/idhibhatpankam/.nuget/packages/swashbuckle.aspnetcore.swaggergen/6.4.0/swashbuckle.aspnetcore.swaggergen.6.4.0.nupkg.sha512",
+    "/Users/idhibhatpankam/.nuget/packages/swashbuckle.aspnetcore.swaggerui/6.4.0/swashbuckle.aspnetcore.swaggerui.6.4.0.nupkg.sha512"
+  ],
+  "logs": []
+}
