@@ -12,6 +12,7 @@ type Ctx interface {
 	JSON(statusCode int, obj interface{})
 	ResponseError(err *apperror.AppError)
 	BadRequestError(err string)
+	UnauthorizedError(err string)
 	ForbiddenError(err string)
 	InternalServerError(err string)
 	NewUUID() uuid.UUID
@@ -19,6 +20,8 @@ type Ctx interface {
 	Param(key string) string
 	Query(key string) string
 	PostForm(key string) string
+	Cookie(key string) (string, error)
+	SetCookie(key, value string, maxAge int, path, domain string, secure, httpOnly bool)
 	GetString(key string) string
 	GetHeader(key string) string
 	RequestContext() context.Context
@@ -90,6 +93,14 @@ func (c *contextImpl) Query(key string) string {
 
 func (c *contextImpl) PostForm(key string) string {
 	return c.Context.PostForm(key)
+}
+
+func (c *contextImpl) Cookie(key string) (string, error) {
+	return c.Context.Cookie(key)
+}
+
+func (c *contextImpl) SetCookie(key, value string, maxAge int, path, domain string, secure, httpOnly bool) {
+	c.Context.SetCookie(key, value, maxAge, path, domain, secure, httpOnly)
 }
 
 func (c *contextImpl) GetString(key string) string {

@@ -7,5 +7,5 @@ type ServiceTicket struct {
 
 type CreateServiceTicketRequest struct {
 	ServiceUrl string `json:"service_url"`
-	User       User   `json:"user"`
+	User       *User  `json:"user"`
 }

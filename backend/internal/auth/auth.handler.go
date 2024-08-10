@@ -8,6 +8,7 @@ import (
 )
 
 type Handler interface {
+	CheckSession(c context.Ctx)
 	GetGoogleLoginUrl(c context.Ctx)
 	VerifyGoogleLogin(c context.Ctx)
 }
@@ -24,6 +25,34 @@ func NewHandler(svc Service, validate validator.DtoValidator, log *zap.Logger) H
 		validate: validate,
 		log:      log,
 	}
+}
+
+func (h *handlerImpl) CheckSession(c context.Ctx) {
+	_, err := c.Cookie("CASTGC")
+	if err != nil {
+		c.UnauthorizedError("'CASTGC' HTTP only cookie not found")
+		return
+	}
+
+	serviceUrl := c.Query("service")
+	if serviceUrl == "" {
+		c.BadRequestError("query parameter 'service' not found")
+		return
+	}
+
+	//check if the cookie is valid + decode the cookie
+	userID := "123"
+
+	serviceTicket, apperr := h.svc.IssueST(c.RequestContext(), &dto.IssueSTRequest{
+		ServiceUrl: serviceUrl,
+		UserID:     userID,
+	})
+	if apperr != nil {
+		c.ResponseError(apperr)
+		return
+	}
+
+	c.JSON(200, serviceTicket)
 }
 
 func (h *handlerImpl) GetGoogleLoginUrl(c context.Ctx) {
