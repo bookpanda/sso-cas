@@ -16,7 +16,7 @@ import (
 )
 
 type Service interface {
-	GetGoogleLoginUrl(_ context.Context) (string, *apperror.AppError)
+	GetGoogleLoginUrl(_ context.Context, serviceUrl string) (string, *apperror.AppError)
 	VerifyGoogleLogin(_ context.Context, req *dto.VerifyGoogleLoginRequest) (*dto.ServiceTicket, *apperror.AppError)
 }
 
@@ -38,7 +38,7 @@ func NewService(oauthConfig *oauth2.Config, oauthClient oauth.GoogleOauthClient,
 	}
 }
 
-func (s *serviceImpl) GetGoogleLoginUrl(_ context.Context) (string, *apperror.AppError) {
+func (s *serviceImpl) GetGoogleLoginUrl(_ context.Context, serviceUrl string) (string, *apperror.AppError) {
 	URL, err := url.Parse(s.oauthConfig.Endpoint.AuthURL)
 	if err != nil {
 		s.log.Named("GetGoogleLoginUrl").Error("Parse: ", zap.Error(err))
@@ -50,7 +50,7 @@ func (s *serviceImpl) GetGoogleLoginUrl(_ context.Context) (string, *apperror.Ap
 	parameters.Add("scope", strings.Join(s.oauthConfig.Scopes, " "))
 	parameters.Add("redirect_uri", s.oauthConfig.RedirectURL)
 	parameters.Add("response_type", "code")
-	parameters.Add("state", "state")
+	parameters.Add("service", serviceUrl)
 	URL.RawQuery = parameters.Encode()
 	loginUrl := URL.String()
 

@@ -27,7 +27,12 @@ func NewHandler(svc Service, validate validator.DtoValidator, log *zap.Logger) H
 }
 
 func (h *handlerImpl) GetGoogleLoginUrl(c context.Ctx) {
-	res, apperr := h.svc.GetGoogleLoginUrl(c.RequestContext())
+	serviceUrl := c.Query("service")
+	if serviceUrl == "" {
+		c.BadRequestError("query parameter 'service' not found")
+	}
+
+	res, apperr := h.svc.GetGoogleLoginUrl(c.RequestContext(), serviceUrl)
 	if apperr != nil {
 		c.ResponseError(apperr)
 		return
