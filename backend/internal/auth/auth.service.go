@@ -9,7 +9,7 @@ import (
 	"github.com/bookpanda/cas-sso/backend/apperror"
 	"github.com/bookpanda/cas-sso/backend/internal/auth/oauth"
 	"github.com/bookpanda/cas-sso/backend/internal/dto"
-	"github.com/bookpanda/cas-sso/backend/internal/user"
+	_user "github.com/bookpanda/cas-sso/backend/internal/user"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 )
@@ -22,11 +22,11 @@ type Service interface {
 type serviceImpl struct {
 	oauthConfig *oauth2.Config
 	oauthClient oauth.GoogleOauthClient
-	userSvc     user.Service
+	userSvc     _user.Service
 	log         *zap.Logger
 }
 
-func NewService(oauthConfig *oauth2.Config, oauthClient oauth.GoogleOauthClient, userSvc user.Service, log *zap.Logger) Service {
+func NewService(oauthConfig *oauth2.Config, oauthClient oauth.GoogleOauthClient, userSvc _user.Service, log *zap.Logger) Service {
 	return &serviceImpl{
 		oauthConfig: oauthConfig,
 		oauthClient: oauthClient,
@@ -79,13 +79,13 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *dto.VerifyGoog
 			createUser := &dto.CreateUserRequest{
 				Email: email,
 			}
-			user, err := s.userSvc.Create(context.Background(), createUser)
+			newUser, err := s.userSvc.Create(context.Background(), createUser)
 			if err != nil {
 				s.log.Named("VerifyGoogleLogin").Error("Create: ", zap.Error(err))
 				return nil, err
 			}
 
-			return &dto.VerifyGoogleLoginResponse{User: *user}, nil
+			return &dto.VerifyGoogleLoginResponse{User: _user.ModelToDto(newUser)}, nil
 
 		default:
 			s.log.Named("VerifyGoogleLogin").Error("FindByEmail: ", zap.Error(apperr))
@@ -93,5 +93,5 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *dto.VerifyGoog
 		}
 	}
 
-	return &dto.VerifyGoogleLoginResponse{User: *user}, nil
+	return &dto.VerifyGoogleLoginResponse{User: _user.ModelToDto(user)}, nil
 }

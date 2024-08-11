@@ -17,8 +17,8 @@ import (
 )
 
 type Service interface {
-	FindByToken(_ context.Context, token string) (*dto.ServiceTicket, *apperror.AppError)
-	Create(_ context.Context, req *dto.CreateServiceTicketRequest) (*dto.ServiceTicket, *apperror.AppError)
+	FindByToken(_ context.Context, token string) (*model.ServiceTicket, *apperror.AppError)
+	Create(_ context.Context, req *dto.CreateServiceTicketRequest) (*model.ServiceTicket, *apperror.AppError)
 	DeleteByToken(_ context.Context, token string) (*dto.SuccessResponse, *apperror.AppError)
 }
 
@@ -38,7 +38,7 @@ func NewService(conf *config.AuthConfig, repo Repository, tokenSvc token.Service
 	}
 }
 
-func (s *serviceImpl) FindByToken(ctx context.Context, token string) (*dto.ServiceTicket, *apperror.AppError) {
+func (s *serviceImpl) FindByToken(ctx context.Context, token string) (*model.ServiceTicket, *apperror.AppError) {
 	_, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -66,10 +66,10 @@ func (s *serviceImpl) FindByToken(ctx context.Context, token string) (*dto.Servi
 		return nil, apperror.NotFoundError("service ticket not found")
 	}
 
-	return ModelToDto(serviceTicket), nil
+	return serviceTicket, nil
 }
 
-func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateServiceTicketRequest) (*dto.ServiceTicket, *apperror.AppError) {
+func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateServiceTicketRequest) (*model.ServiceTicket, *apperror.AppError) {
 	_, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -103,7 +103,7 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateServiceTicketRe
 		return nil, apperror.InternalServerError(err.Error())
 	}
 
-	return ModelToDto(createST), nil
+	return createST, nil
 }
 
 func (s *serviceImpl) DeleteByToken(ctx context.Context, token string) (*dto.SuccessResponse, *apperror.AppError) {

@@ -59,7 +59,7 @@ func (h *handlerImpl) CheckSession(c context.Ctx) {
 	serviceTicket, apperr := h.ticketSvc.Create(c.RequestContext(), &dto.CreateServiceTicketRequest{
 		SessionToken: session.Token,
 		ServiceUrl:   serviceUrl,
-		UserID:       session.UserID,
+		UserID:       session.UserID.String(),
 	})
 	if apperr != nil {
 		c.ResponseError(apperr)

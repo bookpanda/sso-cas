@@ -14,10 +14,10 @@ import (
 )
 
 type Service interface {
-	FindOne(_ context.Context, id string) (*dto.User, *apperror.AppError)
-	FindByEmail(_ context.Context, email string) (*dto.User, *apperror.AppError)
-	Create(_ context.Context, req *dto.CreateUserRequest) (*dto.User, *apperror.AppError)
-	UpdateProfile(_ context.Context, req *dto.UpdateUserProfileRequest) (*dto.User, *apperror.AppError)
+	FindOne(_ context.Context, id string) (*model.User, *apperror.AppError)
+	FindByEmail(_ context.Context, email string) (*model.User, *apperror.AppError)
+	Create(_ context.Context, req *dto.CreateUserRequest) (*model.User, *apperror.AppError)
+	UpdateProfile(_ context.Context, req *dto.UpdateUserProfileRequest) (*model.User, *apperror.AppError)
 }
 
 type serviceImpl struct {
@@ -32,7 +32,7 @@ func NewService(repo Repository, log *zap.Logger) Service {
 	}
 }
 
-func (s *serviceImpl) FindOne(ctx context.Context, id string) (*dto.User, *apperror.AppError) {
+func (s *serviceImpl) FindOne(ctx context.Context, id string) (*model.User, *apperror.AppError) {
 	_, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -46,10 +46,10 @@ func (s *serviceImpl) FindOne(ctx context.Context, id string) (*dto.User, *apper
 		return nil, apperror.InternalServerError(err.Error())
 	}
 
-	return ModelToDto(user), nil
+	return user, nil
 }
 
-func (s *serviceImpl) FindByEmail(ctx context.Context, email string) (*dto.User, *apperror.AppError) {
+func (s *serviceImpl) FindByEmail(ctx context.Context, email string) (*model.User, *apperror.AppError) {
 	_, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -63,10 +63,10 @@ func (s *serviceImpl) FindByEmail(ctx context.Context, email string) (*dto.User,
 		return nil, apperror.InternalServerError(err.Error())
 	}
 
-	return ModelToDto(user), nil
+	return user, nil
 }
 
-func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateUserRequest) (*dto.User, *apperror.AppError) {
+func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateUserRequest) (*model.User, *apperror.AppError) {
 	_, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -82,10 +82,10 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateUserRequest) (*
 		return nil, apperror.InternalServerError(err.Error())
 	}
 
-	return ModelToDto(createUser), nil
+	return createUser, nil
 }
 
-func (s *serviceImpl) UpdateProfile(ctx context.Context, req *dto.UpdateUserProfileRequest) (*dto.User, *apperror.AppError) {
+func (s *serviceImpl) UpdateProfile(ctx context.Context, req *dto.UpdateUserProfileRequest) (*model.User, *apperror.AppError) {
 	_, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -103,5 +103,5 @@ func (s *serviceImpl) UpdateProfile(ctx context.Context, req *dto.UpdateUserProf
 		return nil, apperror.InternalServerError(err.Error())
 	}
 
-	return ModelToDto(updateUser), nil
+	return updateUser, nil
 }

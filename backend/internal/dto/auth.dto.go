@@ -10,7 +10,7 @@ type VerifyGoogleLoginRequest struct {
 }
 
 type VerifyGoogleLoginResponse struct {
-	User User `json:"user"`
+	User *User `json:"user"`
 }
 
 type ServiceTicketToken struct {

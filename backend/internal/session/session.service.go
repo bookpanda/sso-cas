@@ -19,8 +19,8 @@ import (
 )
 
 type Service interface {
-	FindByToken(_ context.Context, token string) (*dto.Session, *apperror.AppError)
-	Create(_ context.Context, req *dto.CreateSessionRequest) (*dto.Session, *apperror.AppError)
+	FindByToken(_ context.Context, token string) (*model.Session, *apperror.AppError)
+	Create(_ context.Context, req *dto.CreateSessionRequest) (*model.Session, *apperror.AppError)
 	DeleteByEmail(_ context.Context, email string) (*dto.SuccessResponse, *apperror.AppError)
 }
 
@@ -42,7 +42,7 @@ func NewService(conf *config.AuthConfig, repo Repository, userSvc user.Service, 
 	}
 }
 
-func (s *serviceImpl) FindByToken(ctx context.Context, token string) (*dto.Session, *apperror.AppError) {
+func (s *serviceImpl) FindByToken(ctx context.Context, token string) (*model.Session, *apperror.AppError) {
 	_, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -70,10 +70,10 @@ func (s *serviceImpl) FindByToken(ctx context.Context, token string) (*dto.Sessi
 		return nil, apperror.NotFoundError("session not found")
 	}
 
-	return ModelToDto(session), nil
+	return session, nil
 }
 
-func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateSessionRequest) (*dto.Session, *apperror.AppError) {
+func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateSessionRequest) (*model.Session, *apperror.AppError) {
 	_, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -105,7 +105,7 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateSessionRequest)
 		return nil, apperror.InternalServerError(err.Error())
 	}
 
-	return ModelToDto(createSession), nil
+	return createSession, nil
 }
 
 func (s *serviceImpl) DeleteByEmail(ctx context.Context, email string) (*dto.SuccessResponse, *apperror.AppError) {
@@ -118,7 +118,7 @@ func (s *serviceImpl) DeleteByEmail(ctx context.Context, email string) (*dto.Suc
 		return nil, apperr
 	}
 
-	if err := s.repo.DeleteByUserID(user.ID); err != nil {
+	if err := s.repo.DeleteByUserID(user.ID.String()); err != nil {
 		s.log.Named("DeleteByEmail").Error("DeleteByUserID: ", zap.Error(err))
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperror.NotFoundError("session not found")
