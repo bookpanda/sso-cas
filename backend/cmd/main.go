@@ -57,6 +57,11 @@ func main() {
 	r.V1Get("/auth/google-url", authHdr.GetGoogleLoginUrl)
 	r.V1Get("/auth/verify-google", authHdr.VerifyGoogleLogin)
 
+	if conf.App.IsDevelopment() {
+		dbHdr := database.NewHandler(db, log)
+		r.V1Get("/clean-db", dbHdr.CleanDb)
+	}
+
 	if err := r.Run(fmt.Sprintf(":%v", conf.App.Port)); err != nil {
 		log.Fatal("unable to start server")
 	}
