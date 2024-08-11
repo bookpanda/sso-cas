@@ -75,7 +75,7 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateSessionRequest)
 		return nil, apperror.BadRequestError("invalid user id")
 	}
 
-	token, apperr := s.tokenSvc.GenerateOpaqueToken(ctx, 32)
+	token, apperr := s.tokenSvc.GenerateOpaqueToken(ctx, 16)
 	if apperr != nil {
 		s.log.Named("Create").Error("GenerateOpaqueToken: ", zap.Error(apperr))
 		return nil, apperr

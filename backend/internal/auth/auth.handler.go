@@ -56,7 +56,7 @@ func (h *handlerImpl) CheckSession(c context.Ctx) {
 		return
 	}
 
-	serviceTicket, apperr := h.svc.IssueST(c.RequestContext(), &dto.IssueSTRequest{
+	serviceTicket, apperr := h.ticketSvc.Create(c.RequestContext(), &dto.CreateServiceTicketRequest{
 		ServiceUrl: serviceUrl,
 		UserID:     session.UserID,
 	})
@@ -122,11 +122,33 @@ func (h *handlerImpl) VerifyGoogleLogin(c context.Ctx) {
 		ServiceUrl: serviceUrl,
 	}
 
-	credential, appErr := h.svc.VerifyGoogleLogin(c.RequestContext(), req)
-	if appErr != nil {
-		c.ResponseError(appErr)
+	res, apperr := h.svc.VerifyGoogleLogin(c.RequestContext(), req)
+	if apperr != nil {
+		c.ResponseError(apperr)
 		return
 	}
 
-	c.JSON(200, credential)
+	serviceTicket, apperr := h.ticketSvc.Create(c.RequestContext(), &dto.CreateServiceTicketRequest{
+		ServiceUrl: serviceUrl,
+		UserID:     res.User.ID,
+	})
+	if apperr != nil {
+		c.ResponseError(apperr)
+		return
+	}
+
+	session, apperr := h.sessionSvc.Create(c.RequestContext(), &dto.CreateSessionRequest{
+		UserID:     res.User.ID,
+		ServiceUrl: serviceUrl,
+	})
+	if apperr != nil {
+		c.ResponseError(apperr)
+		return
+	}
+
+	c.SetCookie("CASTGC", session.Token, 0, "/", "", false, true)
+
+	c.JSON(200, &dto.VerifyGoogleLoginResponse{
+		ServiceTicket: serviceTicket.Token,
+	})
 }

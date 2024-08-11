@@ -9,49 +9,30 @@ import (
 	"github.com/bookpanda/cas-sso/backend/apperror"
 	"github.com/bookpanda/cas-sso/backend/internal/auth/oauth"
 	"github.com/bookpanda/cas-sso/backend/internal/dto"
-	"github.com/bookpanda/cas-sso/backend/internal/service_ticket"
 	"github.com/bookpanda/cas-sso/backend/internal/user"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 )
 
 type Service interface {
-	IssueST(ctx context.Context, req *dto.IssueSTRequest) (*dto.ServiceTicket, *apperror.AppError)
 	GetGoogleLoginUrl(_ context.Context, serviceUrl string) (string, *apperror.AppError)
-	VerifyGoogleLogin(_ context.Context, req *dto.VerifyGoogleLoginRequest) (*dto.VerifyGoogleLoginResponse, *apperror.AppError)
+	VerifyGoogleLogin(_ context.Context, req *dto.VerifyGoogleLoginRequest) (*dto.VerifyGoogleLoginSvcResponse, *apperror.AppError)
 }
 
 type serviceImpl struct {
 	oauthConfig *oauth2.Config
 	oauthClient oauth.GoogleOauthClient
 	userSvc     user.Service
-	ticketSvc   service_ticket.Service
 	log         *zap.Logger
 }
 
-func NewService(oauthConfig *oauth2.Config, oauthClient oauth.GoogleOauthClient, userSvc user.Service, ticketSvc service_ticket.Service, log *zap.Logger) Service {
+func NewService(oauthConfig *oauth2.Config, oauthClient oauth.GoogleOauthClient, userSvc user.Service, log *zap.Logger) Service {
 	return &serviceImpl{
 		oauthConfig: oauthConfig,
 		oauthClient: oauthClient,
 		userSvc:     userSvc,
-		ticketSvc:   ticketSvc,
 		log:         log,
 	}
-}
-
-func (s *serviceImpl) IssueST(ctx context.Context, req *dto.IssueSTRequest) (*dto.ServiceTicket, *apperror.AppError) {
-	createTicket := &dto.CreateServiceTicketRequest{
-		ServiceUrl: req.ServiceUrl,
-		UserID:     req.UserID,
-	}
-
-	serviceTicket, err := s.ticketSvc.Create(ctx, createTicket)
-	if err != nil {
-		s.log.Named("VerifyGoogleLogin").Error("Create: ", zap.Error(err))
-		return nil, apperror.InternalServerError(err.Error())
-	}
-
-	return serviceTicket, nil
 }
 
 func (s *serviceImpl) GetGoogleLoginUrl(_ context.Context, serviceUrl string) (string, *apperror.AppError) {
@@ -73,7 +54,7 @@ func (s *serviceImpl) GetGoogleLoginUrl(_ context.Context, serviceUrl string) (s
 	return loginUrl, nil
 }
 
-func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *dto.VerifyGoogleLoginRequest) (*dto.VerifyGoogleLoginResponse, *apperror.AppError) {
+func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *dto.VerifyGoogleLoginRequest) (*dto.VerifyGoogleLoginSvcResponse, *apperror.AppError) {
 	if req.Code == "" {
 		return nil, apperror.BadRequestError("No code is provided")
 	}
@@ -104,20 +85,7 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *dto.VerifyGoog
 				return nil, err
 			}
 
-			authReq := &dto.IssueSTRequest{
-				ServiceUrl: req.ServiceUrl,
-				UserID:     user.ID,
-			}
-			serviceTicket, apperr := s.IssueST(ctx, authReq)
-			if apperr != nil {
-				s.log.Named("VerifyGoogleLogin").Error("IssueST: ", zap.Error(apperr))
-				return nil, apperr
-			}
-
-			return &dto.VerifyGoogleLoginResponse{
-				ServiceTicket: serviceTicket,
-				SessionCookie: "session_cookie",
-			}, nil
+			return &dto.VerifyGoogleLoginSvcResponse{User: *user}, nil
 
 		default:
 			s.log.Named("VerifyGoogleLogin").Error("FindByEmail: ", zap.Error(apperr))
@@ -125,18 +93,5 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *dto.VerifyGoog
 		}
 	}
 
-	authReq := &dto.IssueSTRequest{
-		ServiceUrl: req.ServiceUrl,
-		UserID:     user.ID,
-	}
-	serviceTicket, apperr := s.IssueST(ctx, authReq)
-	if apperr != nil {
-		s.log.Named("VerifyGoogleLogin").Error("IssueST: ", zap.Error(apperr))
-		return nil, apperr
-	}
-
-	return &dto.VerifyGoogleLoginResponse{
-		ServiceTicket: serviceTicket,
-		SessionCookie: "session_cookie",
-	}, nil
+	return &dto.VerifyGoogleLoginSvcResponse{User: *user}, nil
 }

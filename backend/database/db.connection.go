@@ -20,7 +20,7 @@ func InitDatabase(conf *config.DbConfig, isDebug bool) (db *gorm.DB, err error) 
 		return nil, err
 	}
 
-	err = db.AutoMigrate(&model.User{}, &model.Session{})
+	err = db.AutoMigrate(&model.User{}, &model.Session{}, &model.ServiceTicket{})
 	if err != nil {
 		return nil, err
 	}
