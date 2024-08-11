@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "H2ccVtFN2Xh9llQUqM2Rq57NRmyt8EiBCPD64LWJ5sJkljoFEM8qEi3QxMggRCggg5ho0N4Nwi3NGc6Bi4IveA==",
+  "dgSpecHash": "2UBf6Gp0tbkF9LznOVq8z6Bx2x/q3IjX03oTUKdZXl+Z46RuT/gblY5XltpQXvtuSoHP571uAOnSGcDrBtkvtA==",
   "success": true,
-  "projectFilePath": "/Users/idhibhatpankam/Code/personal-projects/cas-sso/sample-service/sample-service.csproj",
+  "projectFilePath": "/Users/idhibhatpankam/Code/personal-projects/cas-sso/sample-service/backend/backend.csproj",
   "expectedPackageFiles": [
     "/Users/idhibhatpankam/.nuget/packages/microsoft.extensions.apidescription.server/6.0.5/microsoft.extensions.apidescription.server.6.0.5.nupkg.sha512",
     "/Users/idhibhatpankam/.nuget/packages/microsoft.openapi/1.2.3/microsoft.openapi.1.2.3.nupkg.sha512",

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/idhibhatpankam/Code/personal-projects/cas-sso/sample-service/sample-service.csproj": {}
+    "/Users/idhibhatpankam/Code/personal-projects/cas-sso/sample-service/backend/backend.csproj": {}
   },
   "projects": {
-    "/Users/idhibhatpankam/Code/personal-projects/cas-sso/sample-service/sample-service.csproj": {
+    "/Users/idhibhatpankam/Code/personal-projects/cas-sso/sample-service/backend/backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/idhibhatpankam/Code/personal-projects/cas-sso/sample-service/sample-service.csproj",
-        "projectName": "sample-service",
-        "projectPath": "/Users/idhibhatpankam/Code/personal-projects/cas-sso/sample-service/sample-service.csproj",
+        "projectUniqueName": "/Users/idhibhatpankam/Code/personal-projects/cas-sso/sample-service/backend/backend.csproj",
+        "projectName": "backend",
+        "projectPath": "/Users/idhibhatpankam/Code/personal-projects/cas-sso/sample-service/backend/backend.csproj",
         "packagesPath": "/Users/idhibhatpankam/.nuget/packages/",
-        "outputPath": "/Users/idhibhatpankam/Code/personal-projects/cas-sso/sample-service/obj/",
+        "outputPath": "/Users/idhibhatpankam/Code/personal-projects/cas-sso/sample-service/backend/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/idhibhatpankam/.nuget/NuGet/NuGet.Config"

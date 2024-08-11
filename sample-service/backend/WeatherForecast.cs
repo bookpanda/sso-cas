@@ -1,4 +1,4 @@
-namespace sample_service;
+namespace backend;
 
 public class WeatherForecast
 {
