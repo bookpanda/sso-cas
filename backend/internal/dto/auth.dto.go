@@ -9,10 +9,10 @@ type VerifyGoogleLoginRequest struct {
 	ServiceUrl string `json:"service_url"`
 }
 
-type VerifyGoogleLoginSvcResponse struct {
+type VerifyGoogleLoginResponse struct {
 	User User `json:"user"`
 }
 
-type VerifyGoogleLoginResponse struct {
+type ServiceTicketToken struct {
 	ServiceTicket string `json:"service_ticket"`
 }

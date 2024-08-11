@@ -49,7 +49,7 @@ func (h *handlerImpl) CheckSession(c context.Ctx) {
 		return
 	}
 
-	//check if the cookie is valid + not expired
+	//check if the session is valid + not expired
 	session, apperr := h.sessionSvc.FindByToken(c.RequestContext(), token)
 	if apperr != nil {
 		c.ResponseError(apperr)
@@ -65,7 +65,9 @@ func (h *handlerImpl) CheckSession(c context.Ctx) {
 		return
 	}
 
-	c.JSON(200, serviceTicket)
+	c.JSON(200, &dto.ServiceTicketToken{
+		ServiceTicket: serviceTicket.Token,
+	})
 }
 
 func (h *handlerImpl) ValidateST(c context.Ctx) {
@@ -148,7 +150,7 @@ func (h *handlerImpl) VerifyGoogleLogin(c context.Ctx) {
 
 	c.SetCookie("CASTGC", session.Token, 0, "/", "", false, true)
 
-	c.JSON(200, &dto.VerifyGoogleLoginResponse{
+	c.JSON(200, &dto.ServiceTicketToken{
 		ServiceTicket: serviceTicket.Token,
 	})
 }

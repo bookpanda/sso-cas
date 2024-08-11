@@ -11,6 +11,7 @@ import (
 	"github.com/bookpanda/cas-sso/backend/internal/model"
 	"github.com/bookpanda/cas-sso/backend/internal/token"
 	"github.com/bookpanda/cas-sso/backend/internal/user"
+	"github.com/bookpanda/cas-sso/backend/internal/utils"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
@@ -81,11 +82,17 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateSessionRequest)
 		return nil, apperr
 	}
 
+	localExpire, err := utils.ParseLocalTime(time.Now().Add(time.Duration(s.conf.STTTL) * time.Second))
+	if err != nil {
+		s.log.Named("Create").Error("ParseLocalTime: ", zap.Error(err))
+		return nil, apperror.InternalServerError(err.Error())
+	}
+
 	createSession := &model.Session{
 		Token:      "session_" + token,
 		ServiceUrl: req.ServiceUrl,
 		UserID:     userID,
-		ExpiresAt:  time.Now().Add(time.Duration(s.conf.SessionTTL) * time.Second),
+		ExpiresAt:  localExpire,
 	}
 
 	if err := s.repo.Create(createSession); err != nil {

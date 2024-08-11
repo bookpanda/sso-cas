@@ -16,7 +16,7 @@ import (
 
 type Service interface {
 	GetGoogleLoginUrl(_ context.Context, serviceUrl string) (string, *apperror.AppError)
-	VerifyGoogleLogin(_ context.Context, req *dto.VerifyGoogleLoginRequest) (*dto.VerifyGoogleLoginSvcResponse, *apperror.AppError)
+	VerifyGoogleLogin(_ context.Context, req *dto.VerifyGoogleLoginRequest) (*dto.VerifyGoogleLoginResponse, *apperror.AppError)
 }
 
 type serviceImpl struct {
@@ -54,7 +54,7 @@ func (s *serviceImpl) GetGoogleLoginUrl(_ context.Context, serviceUrl string) (s
 	return loginUrl, nil
 }
 
-func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *dto.VerifyGoogleLoginRequest) (*dto.VerifyGoogleLoginSvcResponse, *apperror.AppError) {
+func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *dto.VerifyGoogleLoginRequest) (*dto.VerifyGoogleLoginResponse, *apperror.AppError) {
 	if req.Code == "" {
 		return nil, apperror.BadRequestError("No code is provided")
 	}
@@ -85,7 +85,7 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *dto.VerifyGoog
 				return nil, err
 			}
 
-			return &dto.VerifyGoogleLoginSvcResponse{User: *user}, nil
+			return &dto.VerifyGoogleLoginResponse{User: *user}, nil
 
 		default:
 			s.log.Named("VerifyGoogleLogin").Error("FindByEmail: ", zap.Error(apperr))
@@ -93,5 +93,5 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *dto.VerifyGoog
 		}
 	}
 
-	return &dto.VerifyGoogleLoginSvcResponse{User: *user}, nil
+	return &dto.VerifyGoogleLoginResponse{User: *user}, nil
 }
