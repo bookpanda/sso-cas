@@ -19,6 +19,7 @@ import (
 type Service interface {
 	FindByToken(_ context.Context, token string) (*dto.ServiceTicket, *apperror.AppError)
 	Create(_ context.Context, req *dto.CreateServiceTicketRequest) (*dto.ServiceTicket, *apperror.AppError)
+	DeleteByToken(_ context.Context, token string) (*dto.SuccessResponse, *apperror.AppError)
 }
 
 type serviceImpl struct {
@@ -51,10 +52,14 @@ func (s *serviceImpl) FindByToken(ctx context.Context, token string) (*dto.Servi
 		return nil, apperror.InternalServerError(err.Error())
 	}
 
-	s.log.Info(serviceTicket.ExpiresAt.String())
-	s.log.Info(time.Now().String())
-	if serviceTicket.ExpiresAt.Before(time.Now()) {
-		if err := s.repo.DeleteByUserID(serviceTicket.UserID.String()); err != nil {
+	localExpire, err := utils.ParseLocalTime(serviceTicket.ExpiresAt)
+	if err != nil {
+		s.log.Named("Create").Error("ParseLocalTime: ", zap.Error(err))
+		return nil, apperror.InternalServerError(err.Error())
+	}
+
+	if localExpire.Before(time.Now()) {
+		if err := s.repo.DeleteByToken(serviceTicket.Token); err != nil {
 			s.log.Named("FindByToken").Error("DeleteByUserID: ", zap.Error(err))
 			return nil, apperror.InternalServerError(err.Error())
 		}
@@ -99,4 +104,21 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateServiceTicketRe
 	}
 
 	return ModelToDto(createST), nil
+}
+
+func (s *serviceImpl) DeleteByToken(ctx context.Context, token string) (*dto.SuccessResponse, *apperror.AppError) {
+	_, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	if err := s.repo.DeleteByToken(token); err != nil {
+		s.log.Named("DeleteByToken").Error("DeleteByToken: ", zap.Error(err))
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.NotFoundError("service ticket not found")
+		}
+		return nil, apperror.InternalServerError(err.Error())
+	}
+
+	return &dto.SuccessResponse{
+		Message: "Service ticket deleted",
+	}, nil
 }

@@ -56,7 +56,13 @@ func (s *serviceImpl) FindByToken(ctx context.Context, token string) (*dto.Sessi
 		return nil, apperror.InternalServerError(err.Error())
 	}
 
-	if session.ExpiresAt.Before(time.Now()) {
+	localExpire, err := utils.ParseLocalTime(session.ExpiresAt)
+	if err != nil {
+		s.log.Named("Create").Error("ParseLocalTime: ", zap.Error(err))
+		return nil, apperror.InternalServerError(err.Error())
+	}
+
+	if localExpire.Before(time.Now()) {
 		if err := s.repo.DeleteByUserID(session.UserID.String()); err != nil {
 			s.log.Named("FindByToken").Error("DeleteByUserID: ", zap.Error(err))
 			return nil, apperror.InternalServerError(err.Error())
@@ -82,7 +88,7 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateSessionRequest)
 		return nil, apperr
 	}
 
-	localExpire, err := utils.ParseLocalTime(time.Now().Add(time.Duration(s.conf.STTTL) * time.Second))
+	localExpire, err := utils.ParseLocalTime(time.Now().Add(time.Duration(s.conf.SessionTTL) * time.Second))
 	if err != nil {
 		s.log.Named("Create").Error("ParseLocalTime: ", zap.Error(err))
 		return nil, apperror.InternalServerError(err.Error())

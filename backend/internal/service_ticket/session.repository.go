@@ -8,7 +8,7 @@ import (
 type Repository interface {
 	FindByToken(token string, serviceTicket *model.ServiceTicket) error
 	Create(serviceTicket *model.ServiceTicket) error
-	DeleteByUserID(userID string) error
+	DeleteByToken(token string) error
 }
 
 type repositoryImpl struct {
@@ -27,6 +27,6 @@ func (r *repositoryImpl) Create(serviceTicket *model.ServiceTicket) error {
 	return r.Db.Create(serviceTicket).Error
 }
 
-func (r *repositoryImpl) DeleteByUserID(userID string) error {
-	return r.Db.Where("user_id = ?", userID).Delete(&model.ServiceTicket{}).Error
+func (r *repositoryImpl) DeleteByToken(token string) error {
+	return r.Db.Where("token = ?", token).Delete(&model.ServiceTicket{}).Error
 }

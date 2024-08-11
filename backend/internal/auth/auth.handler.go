@@ -85,6 +85,24 @@ func (h *handlerImpl) ValidateST(c context.Ctx) {
 		return
 	}
 
+	_, apperr = h.ticketSvc.DeleteByToken(c.RequestContext(), serviceTicket.Token)
+	if apperr != nil {
+		c.ResponseError(apperr)
+		return
+	}
+
+	token, err := c.Cookie("CASTGC")
+	if err != nil {
+		h.log.Error("ValidateST: ", zap.Error(err))
+		c.UnauthorizedError("'CASTGC' HTTP only cookie not found")
+		return
+	}
+	if token != serviceTicket.SessionToken {
+		h.log.Error("ValidateST: 'CASTGC' cookie not found or not matching")
+		c.UnauthorizedError("'CASTGC' cookie not found or not matching")
+		return
+	}
+
 	session, apperr := h.sessionSvc.FindByToken(c.RequestContext(), serviceTicket.SessionToken)
 	if apperr != nil {
 		c.ResponseError(apperr)
