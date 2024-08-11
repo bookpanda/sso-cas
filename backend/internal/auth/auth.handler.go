@@ -156,8 +156,7 @@ func (h *handlerImpl) VerifyGoogleLogin(c context.Ctx) {
 	}
 
 	session, apperr := h.sessionSvc.Create(c.RequestContext(), &dto.CreateSessionRequest{
-		UserID:     res.User.ID,
-		ServiceUrl: serviceUrl,
+		UserID: res.User.ID,
 	})
 	if apperr != nil {
 		c.ResponseError(apperr)

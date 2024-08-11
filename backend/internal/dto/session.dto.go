@@ -13,8 +13,7 @@ type SessionPayload struct {
 }
 
 type CreateSessionRequest struct {
-	ServiceUrl string `json:"service_url"`
-	UserID     string `json:"user_id"`
+	UserID string `json:"user_id"`
 }
 
 type DeleteByEmailSessionRequest struct {

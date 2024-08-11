@@ -1,35 +1,58 @@
 import { useEffect, useRef, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-import { useLocation } from "react-router-dom";
-import { getGoogleLoginUrl } from "./api/auth";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getGoogleLoginUrl, verifyGoogleLogin } from "./api/auth";
+import { DIRECT } from "./constant/constant";
 
 function Home() {
   const googleLoginUrl = useRef("");
+  const serviceTicket = useRef("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const serviceUrl = queryParams.get("service");
+  const state = queryParams.get("state");
+  const code = queryParams.get("code");
 
   useEffect(() => {
-    const fetchGoogleLogin = async () => {
-      try {
-        const res = await getGoogleLoginUrl(serviceUrl);
-        setLoading(false);
+    if (code && state) {
+      (async () => {
+        try {
+          const res = await verifyGoogleLogin(code, state);
+          setLoading(false);
 
-        if (res instanceof Error) {
-          return setError(res.message);
+          if (res instanceof Error) {
+            return setError(res.message);
+          }
+
+          serviceTicket.current = res.data;
+        } catch {
+          return setError("Failed to verify Google login");
         }
+      })();
 
-        googleLoginUrl.current = res.data;
-      } catch {
-        return setError("Failed to get Google login URL");
-      }
-    };
+      if (state !== DIRECT)
+        window.location.href = `${state}?ticket=${serviceTicket.current}`;
+    }
+    if (!state || !code)
+      (async () => {
+        try {
+          const res = await getGoogleLoginUrl(serviceUrl);
+          setLoading(false);
 
-    fetchGoogleLogin();
-  }, [serviceUrl]);
+          if (res instanceof Error) {
+            return setError(res.message);
+          }
+
+          googleLoginUrl.current = res.data;
+        } catch {
+          return setError("Failed to get Google login URL");
+        }
+      })();
+  }, [serviceUrl, state, code, navigate]);
 
   const handleClick = () => {
     if (loading) return;
