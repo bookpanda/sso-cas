@@ -86,10 +86,11 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateServiceTicketRe
 	}
 
 	createST := &model.ServiceTicket{
-		Token:      "st_" + token,
-		ServiceUrl: req.ServiceUrl,
-		UserID:     userID,
-		ExpiresAt:  localExpire,
+		SessionToken: req.SessionToken,
+		Token:        "st_" + token,
+		ServiceUrl:   req.ServiceUrl,
+		UserID:       userID,
+		ExpiresAt:    localExpire,
 	}
 
 	if err := s.repo.Create(createST); err != nil {

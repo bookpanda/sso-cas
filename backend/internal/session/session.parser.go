@@ -7,10 +7,9 @@ import (
 
 func ModelToDto(in *model.Session) *dto.Session {
 	return &dto.Session{
-		Token:      in.Token,
-		ServiceUrl: in.ServiceUrl,
-		UserID:     in.UserID.String(),
-		Payload:    in.Payload,
-		ExpiresAt:  in.ExpiresAt,
+		Token:     in.Token,
+		UserID:    in.UserID.String(),
+		Payload:   in.Payload,
+		ExpiresAt: in.ExpiresAt,
 	}
 }

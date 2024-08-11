@@ -89,10 +89,9 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateSessionRequest)
 	}
 
 	createSession := &model.Session{
-		Token:      "session_" + token,
-		ServiceUrl: req.ServiceUrl,
-		UserID:     userID,
-		ExpiresAt:  localExpire,
+		Token:     "session_" + token,
+		UserID:    userID,
+		ExpiresAt: localExpire,
 	}
 
 	if err := s.repo.Create(createSession); err != nil {

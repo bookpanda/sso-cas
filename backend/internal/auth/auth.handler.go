@@ -57,8 +57,9 @@ func (h *handlerImpl) CheckSession(c context.Ctx) {
 	}
 
 	serviceTicket, apperr := h.ticketSvc.Create(c.RequestContext(), &dto.CreateServiceTicketRequest{
-		ServiceUrl: serviceUrl,
-		UserID:     session.UserID,
+		SessionToken: session.Token,
+		ServiceUrl:   serviceUrl,
+		UserID:       session.UserID,
 	})
 	if apperr != nil {
 		c.ResponseError(apperr)
@@ -71,20 +72,26 @@ func (h *handlerImpl) CheckSession(c context.Ctx) {
 }
 
 func (h *handlerImpl) ValidateST(c context.Ctx) {
-	serviceTicket := c.Query("ticket")
-	if serviceTicket == "" {
+	serviceTicketToken := c.Query("ticket")
+	if serviceTicketToken == "" {
 		h.log.Error("ValidateST: query parameter 'ticket' not found")
 		c.BadRequestError("query parameter 'ticket' not found")
 		return
 	}
 
-	res, apperr := h.ticketSvc.FindByToken(c.RequestContext(), serviceTicket)
+	serviceTicket, apperr := h.ticketSvc.FindByToken(c.RequestContext(), serviceTicketToken)
 	if apperr != nil {
 		c.ResponseError(apperr)
 		return
 	}
 
-	c.JSON(200, res)
+	session, apperr := h.sessionSvc.FindByToken(c.RequestContext(), serviceTicket.SessionToken)
+	if apperr != nil {
+		c.ResponseError(apperr)
+		return
+	}
+
+	c.JSON(200, session)
 }
 
 func (h *handlerImpl) GetGoogleLoginUrl(c context.Ctx) {
@@ -130,18 +137,19 @@ func (h *handlerImpl) VerifyGoogleLogin(c context.Ctx) {
 		return
 	}
 
-	serviceTicket, apperr := h.ticketSvc.Create(c.RequestContext(), &dto.CreateServiceTicketRequest{
-		ServiceUrl: serviceUrl,
+	session, apperr := h.sessionSvc.Create(c.RequestContext(), &dto.CreateSessionRequest{
 		UserID:     res.User.ID,
+		ServiceUrl: serviceUrl,
 	})
 	if apperr != nil {
 		c.ResponseError(apperr)
 		return
 	}
 
-	session, apperr := h.sessionSvc.Create(c.RequestContext(), &dto.CreateSessionRequest{
-		UserID:     res.User.ID,
-		ServiceUrl: serviceUrl,
+	serviceTicket, apperr := h.ticketSvc.Create(c.RequestContext(), &dto.CreateServiceTicketRequest{
+		SessionToken: session.Token,
+		ServiceUrl:   serviceUrl,
+		UserID:       res.User.ID,
 	})
 	if apperr != nil {
 		c.ResponseError(apperr)

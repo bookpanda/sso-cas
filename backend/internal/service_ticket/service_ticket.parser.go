@@ -7,9 +7,10 @@ import (
 
 func ModelToDto(in *model.ServiceTicket) *dto.ServiceTicket {
 	return &dto.ServiceTicket{
-		Token:      in.Token,
-		ServiceUrl: in.ServiceUrl,
-		UserID:     in.UserID.String(),
-		ExpiresAt:  in.ExpiresAt,
+		SessionToken: in.SessionToken,
+		Token:        in.Token,
+		ServiceUrl:   in.ServiceUrl,
+		UserID:       in.UserID.String(),
+		ExpiresAt:    in.ExpiresAt,
 	}
 }

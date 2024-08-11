@@ -8,9 +8,8 @@ import (
 
 type Session struct {
 	Base
-	Token      string    `json:"token" gorm:"tinytext"`
-	ServiceUrl string    `json:"service_url" gorm:"tinytext"`
-	UserID     uuid.UUID `json:"user_id" gorm:"tinytext"`
-	Payload    string    `json:"payload" gorm:"text"`
-	ExpiresAt  time.Time `json:"expires_at" gorm:"type:timestamp"`
+	Token     string    `json:"token" gorm:"tinytext"`
+	UserID    uuid.UUID `json:"user_id" gorm:"tinytext"`
+	Payload   string    `json:"payload" gorm:"text"`
+	ExpiresAt time.Time `json:"expires_at" gorm:"type:timestamp"`
 }
