@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
@@ -27,11 +28,17 @@ type OauthConfig struct {
 	RedirectUri  string
 }
 
+type AuthConfig struct {
+	STTTL      int
+	SessionTTL int
+}
+
 type Config struct {
 	App   AppConfig
-	Cors  CorsConfig
 	Db    DbConfig
 	Oauth OauthConfig
+	Auth  AuthConfig
+	Cors  CorsConfig
 }
 
 func LoadConfig() (*Config, error) {
@@ -61,11 +68,25 @@ func LoadConfig() (*Config, error) {
 		RedirectUri:  os.Getenv("OAUTH_REDIRECT_URI"),
 	}
 
+	STTTL, err := strconv.ParseInt(os.Getenv("AUTH_ST_TTL"), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	sessionTTL, err := strconv.ParseInt(os.Getenv("AUTH_SESSION_TTL"), 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	authConfig := AuthConfig{
+		STTTL:      int(STTTL),
+		SessionTTL: int(sessionTTL),
+	}
+
 	return &Config{
 		App:   appConfig,
-		Cors:  corsConfig,
 		Db:    dbConfig,
 		Oauth: oauthConfig,
+		Auth:  authConfig,
+		Cors:  corsConfig,
 	}, nil
 }
 

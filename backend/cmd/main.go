@@ -9,6 +9,7 @@ import (
 	"github.com/bookpanda/cas-sso/backend/internal/auth/oauth"
 	"github.com/bookpanda/cas-sso/backend/internal/router"
 	"github.com/bookpanda/cas-sso/backend/internal/service_ticket"
+	"github.com/bookpanda/cas-sso/backend/internal/session"
 	"github.com/bookpanda/cas-sso/backend/internal/user"
 	"github.com/bookpanda/cas-sso/backend/internal/validator"
 	"github.com/bookpanda/cas-sso/backend/logger"
@@ -34,7 +35,11 @@ func main() {
 	userRepo := user.NewRepository(db)
 	userSvc := user.NewService(userRepo, log.Named("userSvc"))
 
-	ticketSvc := service_ticket.NewService(log.Named("ticketSvc"))
+	ticketRepo := service_ticket.NewRepository(db)
+	ticketSvc := service_ticket.NewService(&conf.Auth, ticketRepo, log.Named("ticketSvc"))
+
+	sessionRepo := session.NewRepository(db)
+	_ = session.NewService(&conf.Auth, sessionRepo, userSvc, log.Named("sessionSvc"))
 
 	oauthConfig := config.LoadOauthConfig(conf.Oauth)
 	oauthClient := oauth.NewGoogleOauthClient(oauthConfig, log.Named("oauthClient"))

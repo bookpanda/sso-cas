@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bookpanda/cas-sso/backend/apperror"
+	"github.com/bookpanda/cas-sso/backend/config"
 	"github.com/bookpanda/cas-sso/backend/internal/dto"
 	"github.com/bookpanda/cas-sso/backend/internal/model"
 	"github.com/bookpanda/cas-sso/backend/internal/user"
@@ -22,13 +23,15 @@ type Service interface {
 }
 
 type serviceImpl struct {
+	conf    *config.AuthConfig
 	repo    Repository
 	userSvc user.Service
 	log     *zap.Logger
 }
 
-func NewService(repo Repository, userSvc user.Service, log *zap.Logger) Service {
+func NewService(conf *config.AuthConfig, repo Repository, userSvc user.Service, log *zap.Logger) Service {
 	return &serviceImpl{
+		conf:    conf,
 		repo:    repo,
 		userSvc: userSvc,
 		log:     log,
@@ -62,14 +65,13 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateSessionRequest)
 	}
 
 	createSession := &model.Session{
-		UserID: userID,
+		ServiceUrl: req.ServiceUrl,
+		UserID:     userID,
+		ExpiresAt:  s.conf.SessionTTL,
 	}
 
 	if err := s.repo.Create(createSession); err != nil {
 		s.log.Named("Create").Error("Create: ", zap.Error(err))
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return nil, apperror.BadRequestError("duplicate email")
-		}
 		return nil, apperror.InternalServerError(err.Error())
 	}
 

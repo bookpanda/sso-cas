@@ -40,15 +40,9 @@ func NewService(oauthConfig *oauth2.Config, oauthClient oauth.GoogleOauthClient,
 }
 
 func (s *serviceImpl) IssueST(ctx context.Context, req *dto.IssueSTRequest) (*dto.ServiceTicket, *apperror.AppError) {
-	user, apperr := s.userSvc.FindOne(ctx, req.UserID)
-	if apperr != nil {
-		s.log.Named("IssueST").Error("FindOne: ", zap.Error(apperr))
-		return nil, apperr
-	}
-
 	createTicket := &dto.CreateServiceTicketRequest{
 		ServiceUrl: req.ServiceUrl,
-		User:       user,
+		UserID:     req.UserID,
 	}
 
 	serviceTicket, err := s.ticketSvc.Create(ctx, createTicket)
@@ -72,7 +66,7 @@ func (s *serviceImpl) GetGoogleLoginUrl(_ context.Context, serviceUrl string) (s
 	parameters.Add("scope", strings.Join(s.oauthConfig.Scopes, " "))
 	parameters.Add("redirect_uri", s.oauthConfig.RedirectURL)
 	parameters.Add("response_type", "code")
-	parameters.Add("state", serviceUrl)
+	parameters.Add("state", serviceUrl) // encode base64
 	URL.RawQuery = parameters.Encode()
 	loginUrl := URL.String()
 

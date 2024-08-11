@@ -5,7 +5,10 @@ import (
 	"time"
 
 	"github.com/bookpanda/cas-sso/backend/apperror"
+	"github.com/bookpanda/cas-sso/backend/config"
 	"github.com/bookpanda/cas-sso/backend/internal/dto"
+	"github.com/bookpanda/cas-sso/backend/internal/model"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -14,12 +17,16 @@ type Service interface {
 }
 
 type serviceImpl struct {
-	log *zap.Logger
+	conf *config.AuthConfig
+	repo Repository
+	log  *zap.Logger
 }
 
-func NewService(log *zap.Logger) Service {
+func NewService(conf *config.AuthConfig, repo Repository, log *zap.Logger) Service {
 	return &serviceImpl{
-		log: log,
+		conf: conf,
+		repo: repo,
+		log:  log,
 	}
 }
 
@@ -27,7 +34,21 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateServiceTicketRe
 	_, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	return &dto.ServiceTicket{
+	userID, err := uuid.Parse(req.UserID)
+	if err != nil {
+		return nil, apperror.BadRequestError("invalid user id")
+	}
+
+	createST := &model.ServiceTicket{
 		ServiceUrl: req.ServiceUrl,
-	}, nil
+		UserID:     userID,
+		ExpiresAt:  s.conf.STTTL,
+	}
+
+	if err := s.repo.Create(createST); err != nil {
+		s.log.Named("Create").Error("Create: ", zap.Error(err))
+		return nil, apperror.InternalServerError(err.Error())
+	}
+
+	return ModelToDto(createST), nil
 }

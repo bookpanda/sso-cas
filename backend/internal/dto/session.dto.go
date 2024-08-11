@@ -1,14 +1,19 @@
 package dto
 
 type Session struct {
-	ID        string `json:"id"`
-	UserID    string `json:"user_id"`
-	ExpiresAt int64  `json:"expires_at"`
+	Token      string `json:"token"`
+	ServiceUrl string `json:"service_url"`
+	UserID     string `json:"user_id"`
+	Payload    string `json:"payload"`
+	ExpiresAt  int    `json:"expires_at"`
+}
+
+type SessionPayload struct {
 }
 
 type CreateSessionRequest struct {
-	UserID    string `json:"user_id"`
-	ExpiresAt int64  `json:"expires_at"`
+	ServiceUrl string `json:"service_url"`
+	UserID     string `json:"user_id"`
 }
 
 type DeleteByEmailSessionRequest struct {
