@@ -4,6 +4,6 @@ namespace backend.Repositories.Interfaces;
 
 public interface IUserRepository
 {
-    Task<User?> FindOne(long id);
+    Task<User?> FindOne(string id);
     Task<User> Create(User todo);
 }

@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample-service", "sample-service", "{C0E9432A-E749-44B3-950C-EDC17DB2988A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample-service", "sample-service", "{710F99E1-249D-4103-889F-90E0260D8F80}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "backend", "sample-service\backend\backend.csproj", "{1B6328F0-A258-4DF3-909E-1DF9EC8CE4CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "backend", "sample-service\backend\backend.csproj", "{E0B9A9AA-92CB-4FA5-81AE-A02432414219}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,16 +13,16 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1B6328F0-A258-4DF3-909E-1DF9EC8CE4CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1B6328F0-A258-4DF3-909E-1DF9EC8CE4CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1B6328F0-A258-4DF3-909E-1DF9EC8CE4CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1B6328F0-A258-4DF3-909E-1DF9EC8CE4CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0B9A9AA-92CB-4FA5-81AE-A02432414219}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0B9A9AA-92CB-4FA5-81AE-A02432414219}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0B9A9AA-92CB-4FA5-81AE-A02432414219}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0B9A9AA-92CB-4FA5-81AE-A02432414219}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{1B6328F0-A258-4DF3-909E-1DF9EC8CE4CE} = {C0E9432A-E749-44B3-950C-EDC17DB2988A}
+		{E0B9A9AA-92CB-4FA5-81AE-A02432414219} = {710F99E1-249D-4103-889F-90E0260D8F80}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0481B658-FB5E-447C-887F-545C845103B0}

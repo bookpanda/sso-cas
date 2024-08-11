@@ -19,7 +19,7 @@ public class UserService : IUserService
         _logger = logger;
     }
 
-    public async Task<UserDTO?> FindOne(long id)
+    public async Task<UserDTO?> FindOne(string id)
     {
         var user = await _repo.FindOne(id);
         if (user == null)

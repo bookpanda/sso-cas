@@ -9,14 +9,14 @@ namespace tiermaker_backend.Services;
 public class TokenService : ITokenService
 {
     private readonly ICacheRepository _cache;
-    private readonly IJwtService _jwtService;
+    private readonly IJwtService _jwtSvc;
     private readonly IConfiguration _config;
     private readonly int _refreshTTLDays;
 
-    public TokenService(ICacheRepository cache, IJwtService jwtService, IConfiguration config)
+    public TokenService(ICacheRepository cache, IJwtService jwtSvc, IConfiguration config)
     {
         _cache = cache;
-        _jwtService = jwtService;
+        _jwtSvc = jwtSvc;
         _config = config;
         _refreshTTLDays = _config.GetValue<int>("JWT:RefreshTTLDays");
     }
@@ -29,11 +29,11 @@ public class TokenService : ITokenService
             session = await CreateCredentials(user);
         }
 
-        var isTokenValid = _jwtService.ValidateToken(session.AccessToken);
+        var isTokenValid = _jwtSvc.ValidateToken(session.AccessToken);
         if (!isTokenValid)
         {
             await _cache.RemoveAsync(SessionKey(user.ID));
-            string accessToken = _jwtService.CreateToken(user);
+            string accessToken = _jwtSvc.CreateToken(user);
 
             var credentials = new AuthToken
             {
@@ -51,7 +51,7 @@ public class TokenService : ITokenService
 
     public async Task<AuthToken> CreateCredentials(User user)
     {
-        string accessToken = _jwtService.CreateToken(user);
+        string accessToken = _jwtSvc.CreateToken(user);
         string refreshToken = CreateRefreshToken();
 
         await _cache.SetAsync(RefreshKey(refreshToken), user, TimeSpan.FromDays(_refreshTTLDays));
