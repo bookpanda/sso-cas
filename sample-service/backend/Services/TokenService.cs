@@ -4,7 +4,7 @@ using backend.Repositories.Interfaces;
 using backend.Interfaces;
 using backend.DTO;
 
-namespace tiermaker_backend.Services;
+namespace backend.Services;
 
 public class TokenService : ITokenService
 {

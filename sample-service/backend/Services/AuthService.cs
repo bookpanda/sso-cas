@@ -1,9 +1,7 @@
-using System.Net;
 using backend.DTO;
-using backend.Exceptions;
 using backend.Services.Interfaces;
 
-namespace TodoApi.Services;
+namespace backend.Services;
 
 public class AuthService : IAuthService
 {

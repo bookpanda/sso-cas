@@ -5,7 +5,7 @@ using backend.Models;
 using backend.Repositories.Interfaces;
 using backend.Services.Interfaces;
 
-namespace TodoApi.Services;
+namespace backend.Services;
 
 public class UserService : IUserService
 {

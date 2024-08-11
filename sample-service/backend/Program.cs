@@ -1,17 +1,28 @@
 using Microsoft.EntityFrameworkCore;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+Env.Load();
+builder.Configuration.AddEnvironmentVariables();
+
+var dbConnString = builder.Configuration.GetConnectionString("Database");
+builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseNpgsql(dbConnString));
+
+var redisConnString = builder.Configuration.GetConnectionString("Redis");
+builder.Services.AddStackExchangeRedisCache(opt => opt.Configuration = redisConnString);
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHealthChecks();
 builder.Services.AddSwaggerGen();
+
+builder.Services
+    .AddConfig(builder.Configuration)
+    .AddMyDependencyGroup();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -22,6 +33,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+app.MapHealthChecks("/healthz");
 app.MapControllers();
-
 app.Run();
