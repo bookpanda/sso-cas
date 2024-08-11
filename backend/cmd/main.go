@@ -10,6 +10,7 @@ import (
 	"github.com/bookpanda/cas-sso/backend/internal/router"
 	"github.com/bookpanda/cas-sso/backend/internal/service_ticket"
 	"github.com/bookpanda/cas-sso/backend/internal/session"
+	"github.com/bookpanda/cas-sso/backend/internal/token"
 	"github.com/bookpanda/cas-sso/backend/internal/user"
 	"github.com/bookpanda/cas-sso/backend/internal/validator"
 	"github.com/bookpanda/cas-sso/backend/logger"
@@ -35,20 +36,24 @@ func main() {
 	userRepo := user.NewRepository(db)
 	userSvc := user.NewService(userRepo, log.Named("userSvc"))
 
+	tokenSvc := token.NewService(log.Named("tokenSvc"))
+
 	ticketRepo := service_ticket.NewRepository(db)
-	ticketSvc := service_ticket.NewService(&conf.Auth, ticketRepo, log.Named("ticketSvc"))
+	ticketSvc := service_ticket.NewService(&conf.Auth, ticketRepo, tokenSvc, log.Named("ticketSvc"))
 
 	sessionRepo := session.NewRepository(db)
-	sessionSvc := session.NewService(&conf.Auth, sessionRepo, userSvc, log.Named("sessionSvc"))
+	sessionSvc := session.NewService(&conf.Auth, sessionRepo, userSvc, tokenSvc, log.Named("sessionSvc"))
 
 	oauthConfig := config.LoadOauthConfig(conf.Oauth)
 	oauthClient := oauth.NewGoogleOauthClient(oauthConfig, log.Named("oauthClient"))
 	authSvc := auth.NewService(oauthConfig, oauthClient, userSvc, ticketSvc, log.Named("authSvc"))
-	authHdr := auth.NewHandler(authSvc, sessionSvc, validate, log)
+	authHdr := auth.NewHandler(authSvc, sessionSvc, ticketSvc, validate, log)
 
 	corsHandler := config.MakeCorsConfig(conf)
 	r := router.New(conf, corsHandler)
 
+	r.V1Get("/auth/check-session", authHdr.CheckSession)
+	r.V1Get("/auth/validate-st", authHdr.ValidateST)
 	r.V1Get("/auth/google-url", authHdr.GetGoogleLoginUrl)
 	r.V1Get("/auth/verify-google", authHdr.VerifyGoogleLogin)
 

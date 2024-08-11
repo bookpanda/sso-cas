@@ -9,6 +9,7 @@ import (
 	"github.com/bookpanda/cas-sso/backend/config"
 	"github.com/bookpanda/cas-sso/backend/internal/dto"
 	"github.com/bookpanda/cas-sso/backend/internal/model"
+	"github.com/bookpanda/cas-sso/backend/internal/token"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -20,16 +21,18 @@ type Service interface {
 }
 
 type serviceImpl struct {
-	conf *config.AuthConfig
-	repo Repository
-	log  *zap.Logger
+	conf     *config.AuthConfig
+	repo     Repository
+	tokenSvc token.Service
+	log      *zap.Logger
 }
 
-func NewService(conf *config.AuthConfig, repo Repository, log *zap.Logger) Service {
+func NewService(conf *config.AuthConfig, repo Repository, tokenSvc token.Service, log *zap.Logger) Service {
 	return &serviceImpl{
-		conf: conf,
-		repo: repo,
-		log:  log,
+		conf:     conf,
+		repo:     repo,
+		tokenSvc: tokenSvc,
+		log:      log,
 	}
 }
 
@@ -67,7 +70,14 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateServiceTicketRe
 		return nil, apperror.BadRequestError("invalid user id")
 	}
 
+	token, apperr := s.tokenSvc.GenerateOpaqueToken(ctx, 32)
+	if apperr != nil {
+		s.log.Named("Create").Error("GenerateOpaqueToken: ", zap.Error(apperr))
+		return nil, apperr
+	}
+
 	createST := &model.ServiceTicket{
+		Token:      "st_" + token,
 		ServiceUrl: req.ServiceUrl,
 		UserID:     userID,
 		ExpiresAt:  time.Now().Add(time.Duration(s.conf.STTTL) * time.Second),
