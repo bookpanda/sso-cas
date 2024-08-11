@@ -1,6 +1,10 @@
 package model
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Session struct {
 	Base
@@ -8,5 +12,5 @@ type Session struct {
 	ServiceUrl string    `json:"service_url" gorm:"tinytext"`
 	UserID     uuid.UUID `json:"user_id" gorm:"tinytext"`
 	Payload    string    `json:"payload" gorm:"text"`
-	ExpiresAt  int       `json:"expires_at" gorm:"type:timestamp"`
+	ExpiresAt  time.Time `json:"expires_at" gorm:"type:timestamp"`
 }

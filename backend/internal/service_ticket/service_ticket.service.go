@@ -2,6 +2,7 @@ package service_ticket
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/bookpanda/cas-sso/backend/apperror"
@@ -10,9 +11,11 @@ import (
 	"github.com/bookpanda/cas-sso/backend/internal/model"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type Service interface {
+	FindByToken(_ context.Context, token string) (*dto.ServiceTicket, *apperror.AppError)
 	Create(_ context.Context, req *dto.CreateServiceTicketRequest) (*dto.ServiceTicket, *apperror.AppError)
 }
 
@@ -30,6 +33,31 @@ func NewService(conf *config.AuthConfig, repo Repository, log *zap.Logger) Servi
 	}
 }
 
+func (s *serviceImpl) FindByToken(ctx context.Context, token string) (*dto.ServiceTicket, *apperror.AppError) {
+	_, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	serviceTicket := &model.ServiceTicket{}
+
+	if err := s.repo.FindByToken(token, serviceTicket); err != nil {
+		s.log.Named("FindByToken").Error("FindByToken: ", zap.Error(err))
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.NotFoundError("session not found")
+		}
+		return nil, apperror.InternalServerError(err.Error())
+	}
+
+	if serviceTicket.ExpiresAt.Before(time.Now()) {
+		if err := s.repo.DeleteByUserID(serviceTicket.UserID.String()); err != nil {
+			s.log.Named("FindByToken").Error("DeleteByUserID: ", zap.Error(err))
+			return nil, apperror.InternalServerError(err.Error())
+		}
+		return nil, apperror.NotFoundError("session not found")
+	}
+
+	return ModelToDto(serviceTicket), nil
+}
+
 func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateServiceTicketRequest) (*dto.ServiceTicket, *apperror.AppError) {
 	_, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -42,7 +70,7 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateServiceTicketRe
 	createST := &model.ServiceTicket{
 		ServiceUrl: req.ServiceUrl,
 		UserID:     userID,
-		ExpiresAt:  s.conf.STTTL,
+		ExpiresAt:  time.Now().Add(time.Duration(s.conf.STTTL) * time.Second),
 	}
 
 	if err := s.repo.Create(createST); err != nil {

@@ -1,10 +1,12 @@
 package dto
 
+import "time"
+
 type ServiceTicket struct {
-	Token      string `json:"token"`
-	ServiceUrl string `json:"service_url"`
-	UserID     string `json:"user_id"`
-	ExpiresAt  int    `json:"expires_at"`
+	Token      string    `json:"token"`
+	ServiceUrl string    `json:"service_url"`
+	UserID     string    `json:"user_id"`
+	ExpiresAt  time.Time `json:"expires_at"`
 }
 
 type CreateServiceTicketRequest struct {

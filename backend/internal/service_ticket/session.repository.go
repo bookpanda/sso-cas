@@ -6,7 +6,7 @@ import (
 )
 
 type Repository interface {
-	FindOne(id string, serviceTicket *model.ServiceTicket) error
+	FindByToken(token string, serviceTicket *model.ServiceTicket) error
 	Create(serviceTicket *model.ServiceTicket) error
 	DeleteByUserID(userID string) error
 }
@@ -19,8 +19,8 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repositoryImpl{Db: db}
 }
 
-func (r *repositoryImpl) FindOne(id string, serviceTicket *model.ServiceTicket) error {
-	return r.Db.Model(serviceTicket).First(serviceTicket, "id = ?", id).Error
+func (r *repositoryImpl) FindByToken(token string, serviceTicket *model.ServiceTicket) error {
+	return r.Db.Model(serviceTicket).First(serviceTicket, "token = ?", token).Error
 }
 
 func (r *repositoryImpl) Create(serviceTicket *model.ServiceTicket) error {

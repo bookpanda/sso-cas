@@ -17,7 +17,7 @@ import (
 )
 
 type Service interface {
-	FindOne(_ context.Context, id string) (*dto.Session, *apperror.AppError)
+	FindByToken(_ context.Context, token string) (*dto.Session, *apperror.AppError)
 	Create(_ context.Context, req *dto.CreateSessionRequest) (*dto.Session, *apperror.AppError)
 	DeleteByEmail(_ context.Context, req *dto.DeleteByEmailSessionRequest) (*dto.SuccessResponse, *apperror.AppError)
 }
@@ -38,18 +38,26 @@ func NewService(conf *config.AuthConfig, repo Repository, userSvc user.Service, 
 	}
 }
 
-func (s *serviceImpl) FindOne(ctx context.Context, id string) (*dto.Session, *apperror.AppError) {
+func (s *serviceImpl) FindByToken(ctx context.Context, token string) (*dto.Session, *apperror.AppError) {
 	_, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	session := &model.Session{}
 
-	if err := s.repo.FindOne(id, session); err != nil {
-		s.log.Named("FindOne").Error("FindOne: ", zap.Error(err))
+	if err := s.repo.FindByToken(token, session); err != nil {
+		s.log.Named("FindByToken").Error("FindByToken: ", zap.Error(err))
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, apperror.NotFoundError("session not found")
 		}
 		return nil, apperror.InternalServerError(err.Error())
+	}
+
+	if session.ExpiresAt.Before(time.Now()) {
+		if err := s.repo.DeleteByUserID(session.UserID.String()); err != nil {
+			s.log.Named("FindByToken").Error("DeleteByUserID: ", zap.Error(err))
+			return nil, apperror.InternalServerError(err.Error())
+		}
+		return nil, apperror.NotFoundError("session not found")
 	}
 
 	return ModelToDto(session), nil
@@ -67,7 +75,7 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateSessionRequest)
 	createSession := &model.Session{
 		ServiceUrl: req.ServiceUrl,
 		UserID:     userID,
-		ExpiresAt:  s.conf.SessionTTL,
+		ExpiresAt:  time.Now().Add(time.Duration(s.conf.SessionTTL) * time.Second),
 	}
 
 	if err := s.repo.Create(createSession); err != nil {

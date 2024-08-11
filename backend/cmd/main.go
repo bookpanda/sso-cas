@@ -39,12 +39,12 @@ func main() {
 	ticketSvc := service_ticket.NewService(&conf.Auth, ticketRepo, log.Named("ticketSvc"))
 
 	sessionRepo := session.NewRepository(db)
-	_ = session.NewService(&conf.Auth, sessionRepo, userSvc, log.Named("sessionSvc"))
+	sessionSvc := session.NewService(&conf.Auth, sessionRepo, userSvc, log.Named("sessionSvc"))
 
 	oauthConfig := config.LoadOauthConfig(conf.Oauth)
 	oauthClient := oauth.NewGoogleOauthClient(oauthConfig, log.Named("oauthClient"))
 	authSvc := auth.NewService(oauthConfig, oauthClient, userSvc, ticketSvc, log.Named("authSvc"))
-	authHdr := auth.NewHandler(authSvc, validate, log)
+	authHdr := auth.NewHandler(authSvc, sessionSvc, validate, log)
 
 	corsHandler := config.MakeCorsConfig(conf)
 	r := router.New(conf, corsHandler)

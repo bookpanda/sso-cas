@@ -3,6 +3,7 @@ package auth
 import (
 	"github.com/bookpanda/cas-sso/backend/internal/context"
 	"github.com/bookpanda/cas-sso/backend/internal/dto"
+	"github.com/bookpanda/cas-sso/backend/internal/session"
 	"github.com/bookpanda/cas-sso/backend/internal/validator"
 	"go.uber.org/zap"
 )
@@ -14,21 +15,23 @@ type Handler interface {
 }
 
 type handlerImpl struct {
-	svc      Service
-	validate validator.DtoValidator
-	log      *zap.Logger
+	svc        Service
+	sessionSvc session.Service
+	validate   validator.DtoValidator
+	log        *zap.Logger
 }
 
-func NewHandler(svc Service, validate validator.DtoValidator, log *zap.Logger) Handler {
+func NewHandler(svc Service, sessionSvc session.Service, validate validator.DtoValidator, log *zap.Logger) Handler {
 	return &handlerImpl{
-		svc:      svc,
-		validate: validate,
-		log:      log,
+		svc:        svc,
+		sessionSvc: sessionSvc,
+		validate:   validate,
+		log:        log,
 	}
 }
 
 func (h *handlerImpl) CheckSession(c context.Ctx) {
-	_, err := c.Cookie("CASTGC")
+	token, err := c.Cookie("CASTGC")
 	if err != nil {
 		c.UnauthorizedError("'CASTGC' HTTP only cookie not found")
 		return
@@ -41,11 +44,15 @@ func (h *handlerImpl) CheckSession(c context.Ctx) {
 	}
 
 	//check if the cookie is valid + decode the cookie
-	userID := "123"
+	session, apperr := h.sessionSvc.FindByToken(c.RequestContext(), token)
+	if apperr != nil {
+		c.ResponseError(apperr)
+		return
+	}
 
 	serviceTicket, apperr := h.svc.IssueST(c.RequestContext(), &dto.IssueSTRequest{
 		ServiceUrl: serviceUrl,
-		UserID:     userID,
+		UserID:     session.UserID,
 	})
 	if apperr != nil {
 		c.ResponseError(apperr)

@@ -6,7 +6,7 @@ import (
 )
 
 type Repository interface {
-	FindOne(id string, session *model.Session) error
+	FindByToken(token string, session *model.Session) error
 	Create(session *model.Session) error
 	DeleteByUserID(userID string) error
 }
@@ -19,8 +19,8 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repositoryImpl{Db: db}
 }
 
-func (r *repositoryImpl) FindOne(id string, session *model.Session) error {
-	return r.Db.Model(session).First(session, "id = ?", id).Error
+func (r *repositoryImpl) FindByToken(token string, session *model.Session) error {
+	return r.Db.Model(session).First(session, "token = ?", token).Error
 }
 
 func (r *repositoryImpl) Create(session *model.Session) error {
