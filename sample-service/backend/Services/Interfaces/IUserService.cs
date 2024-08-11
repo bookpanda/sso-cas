@@ -1,9 +1,10 @@
 using backend.DTO;
+using backend.Models;
 
 namespace backend.Services.Interfaces;
 
 public interface IUserService
 {
-    Task<UserDTO?> FindOne(string id);
-    Task<UserDTO> Create(UserDTO user);
+    Task<User?> FindOne(string id);
+    Task<User> Create(CreateUserDTO user);
 }

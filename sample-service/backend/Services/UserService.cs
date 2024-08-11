@@ -2,7 +2,6 @@ using System.Net;
 using backend.DTO;
 using backend.Exceptions;
 using backend.Models;
-using backend.Parsers;
 using backend.Repositories.Interfaces;
 using backend.Services.Interfaces;
 
@@ -19,7 +18,7 @@ public class UserService : IUserService
         _logger = logger;
     }
 
-    public async Task<UserDTO?> FindOne(string id)
+    public async Task<User?> FindOne(string id)
     {
         var user = await _repo.FindOne(id);
         if (user == null)
@@ -28,10 +27,10 @@ public class UserService : IUserService
             throw new ServiceException("User not found", HttpStatusCode.NotFound);
         }
 
-        return UserParser.ModelToDTO(user);
+        return user;
     }
 
-    public async Task<UserDTO> Create(UserDTO user)
+    public async Task<User> Create(CreateUserDTO user)
     {
         var newUser = new User
         {
@@ -47,6 +46,6 @@ public class UserService : IUserService
             throw new ServiceException("Error creating user", HttpStatusCode.InternalServerError, ex);
         }
 
-        return UserParser.ModelToDTO(newUser);
+        return newUser;
     }
 }

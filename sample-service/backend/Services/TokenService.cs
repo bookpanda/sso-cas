@@ -91,8 +91,8 @@ public class TokenService : ITokenService
         return $"refresh_{refreshToken}";
     }
 
-    private string SessionKey(string userId)
+    private string SessionKey(string? userID)
     {
-        return $"session_{userId}";
+        return $"session_{userID}";
     }
 }
