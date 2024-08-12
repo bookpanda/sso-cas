@@ -13,10 +13,6 @@ var redisConnString = builder.Configuration.GetConnectionString("Redis");
 builder.Services.AddStackExchangeRedisCache(opt =>
 {
     opt.Configuration = redisConnString;
-    opt.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions
-    {
-        Password = builder.Configuration["Redis:Password"]
-    };
 });
 
 builder.Services.AddControllers(opt => opt.Conventions.Insert(0, new GlobalRoutePrefixConvention("api/v1")));
