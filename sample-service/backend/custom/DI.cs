@@ -27,6 +27,8 @@ public static class MyConfigServiceCollectionExtensions
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IUserService, UserService>();
 
+        services.AddScoped<HttpClient>();
+
         return services;
     }
 }
