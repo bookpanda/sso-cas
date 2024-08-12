@@ -1,4 +1,5 @@
 using backend.DTO;
+using backend.Exceptions;
 using backend.Services.Interfaces;
 
 namespace backend.Services;
@@ -18,19 +19,26 @@ public class AuthService : IAuthService
 
     public async Task<AuthToken> AuthenticateSSO(string userCASID)
     {
-        var user = await _userService.FindOne(userCASID);
-        if (user == null)
+        Models.User? user = null;
+        try
         {
-            _logger.LogInformation($"User with id {userCASID} not found, creating new user");
+            user = await _userService.FindOne(userCASID);
+        }
+        catch (ServiceException ex)
+        {
+            if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                _logger.LogInformation($"User with id {userCASID} not found, creating new user");
 
-            var newUser = new CreateUserDTO { CASID = userCASID };
-            var createdUser = await _userService.Create(newUser);
+                var newUser = new CreateUserDTO { CASID = userCASID };
+                var createdUser = await _userService.Create(newUser);
 
-            var newAuthToken = await _tokenService.GetCredentials(createdUser);
-            return newAuthToken;
+                var newAuthToken = await _tokenService.GetCredentials(createdUser);
+                return newAuthToken;
+            }
         }
 
-        var authToken = await _tokenService.GetCredentials(user);
+        var authToken = await _tokenService.GetCredentials(user!);
         return authToken;
     }
 }
