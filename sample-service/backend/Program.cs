@@ -1,9 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
 
-var builder = WebApplication.CreateBuilder(args);
-
 Env.Load();
+string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+
+WebApplicationOptions options = new WebApplicationOptions
+{
+    EnvironmentName = environment
+};
+var builder = WebApplication.CreateBuilder(options);
+
 builder.Configuration.AddEnvironmentVariables();
 
 var dbConnString = builder.Configuration.GetConnectionString("Database");
