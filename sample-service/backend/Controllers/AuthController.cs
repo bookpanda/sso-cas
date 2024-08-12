@@ -25,7 +25,7 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost("auth-sso")]
+    [HttpGet("auth-sso")]
     public async Task<IActionResult> AuthenticateSSO([FromQuery] string ticket)
     { // only after redirect from CAS
         try
@@ -66,6 +66,7 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpGet("validate")]
     public async Task<IActionResult> Validate([FromHeader(Name = "Authorization")] string authHeader)
     {
         var accessToken = authHeader?.Split(" ").Last();
