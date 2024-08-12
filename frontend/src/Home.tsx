@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { getGoogleLoginUrl, verifyGoogleLogin } from "./api/auth";
 import { DIRECT } from "./constant/constant";
 
@@ -9,7 +9,6 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const serviceUrl = queryParams.get("service");
@@ -49,7 +48,7 @@ function Home() {
           return setError("Failed to get Google login URL");
         }
       })();
-  }, [serviceUrl, state, code, navigate]);
+  }, [serviceUrl, state, code]);
 
   const handleClick = () => {
     if (loading) return;
