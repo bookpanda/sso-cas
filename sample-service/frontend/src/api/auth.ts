@@ -1,34 +1,21 @@
 import { AxiosResponse } from "axios";
-import { DIRECT } from "../constant/constant";
 import { apiClient } from "./axios";
+import { AuthenticateSSODTO } from "./dto/auth.dto";
+import { parseAuthenticateSSO } from "./parser/auth.parser";
 
-export const getGoogleLoginUrl = async (serviceUrl: string | null) => {
+export const authenticateSSO = async (serviceTicket: string) => {
   try {
-    const res: AxiosResponse<string> = await apiClient.get("/auth/google-url", {
-      params: { service: serviceUrl ?? DIRECT },
-    });
-
-    return res;
-  } catch (error) {
-    console.error("Failed to get Google login URL: ", error);
-
-    return Error("Failed to get Google login URL");
-  }
-};
-
-export const verifyGoogleLogin = async (code: string, state: string) => {
-  try {
-    const res: AxiosResponse<string> = await apiClient.get(
-      "/auth/verify-google",
+    const res: AxiosResponse<AuthenticateSSODTO> = await apiClient.get(
+      "/auth/auth-sso",
       {
-        params: { code: code, state: state },
+        params: { ticket: serviceTicket },
       }
     );
 
-    return res;
+    return parseAuthenticateSSO(res.data);
   } catch (error) {
-    console.error("Failed to get Google login URL: ", error);
+    console.error("Failed to authenticate SSO: ", error);
 
-    return Error("Failed to get Google login URL");
+    return Error("Failed to authenticate SSO");
   }
 };
