@@ -4,7 +4,8 @@ using backend.Repositories.Interfaces;
 using backend.Interfaces;
 using backend.DTO;
 using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
+using backend.Config;
+using Microsoft.Extensions.Options;
 
 namespace backend.Services;
 
@@ -12,23 +13,21 @@ public class TokenService : ITokenService
 {
     private readonly ICacheRepository _cache;
     private readonly IJwtService _jwtSvc;
-    private readonly IConfiguration _config;
-    private readonly int _refreshTTLDays;
+    private readonly JwtConfig _config;
 
-    public TokenService(ICacheRepository cache, IJwtService jwtSvc, IConfiguration config)
+    public TokenService(ICacheRepository cache, IJwtService jwtSvc, IOptions<JwtConfig> config)
     {
         _cache = cache;
         _jwtSvc = jwtSvc;
-        _config = config;
-        _refreshTTLDays = _config.GetValue<int>("JWT:RefreshTTLDays");
+        _config = config.Value;
     }
 
-    public async Task<AuthToken> GetCredentials(User user)
+    public async Task<AuthToken> GetCredentials(User user, DateTime refreshExpiry)
     {
         var session = await _cache.GetAsync<AuthToken>(SessionKey(user.ID));
         if (session == null)
         {
-            session = await CreateCredentials(user);
+            session = await CreateCredentials(user, refreshExpiry);
         }
 
         var claims = _jwtSvc.ValidateToken(session.AccessToken);
@@ -41,9 +40,9 @@ public class TokenService : ITokenService
             {
                 AccessToken = accessToken,
                 RefreshToken = session.RefreshToken,
-                ExpiresIn = DateTime.UtcNow.AddMinutes(_config.GetValue<int>("JWT:ExpirationMinutes"))
+                ExpiresIn = DateTime.UtcNow.AddSeconds(_config.AccessTTL)
             };
-            await _cache.SetAsync(SessionKey(user.ID), credentials, TimeSpan.FromDays(_refreshTTLDays));
+            await _cache.SetAsync(SessionKey(user.ID), credentials, TimeSpan.FromSeconds(_config.AccessTTL));
 
             return credentials;
         }
@@ -51,21 +50,21 @@ public class TokenService : ITokenService
         return session;
     }
 
-    public async Task<AuthToken> CreateCredentials(User user)
+    public async Task<AuthToken> CreateCredentials(User user, DateTime refreshExpiry)
     {
         string accessToken = _jwtSvc.CreateToken(user);
         string refreshToken = CreateRefreshToken();
 
-        await _cache.SetAsync(RefreshKey(refreshToken), user, TimeSpan.FromDays(_refreshTTLDays));
+        await _cache.SetAsync(RefreshKey(refreshToken), user, refreshExpiry - DateTime.Now);
 
         var credentials = new AuthToken
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            ExpiresIn = DateTime.UtcNow.AddMinutes(_config.GetValue<int>("JWT:ExpirationMinutes"))
+            ExpiresIn = DateTime.UtcNow.AddSeconds(_config.AccessTTL)
         };
 
-        await _cache.SetAsync(SessionKey(user.ID), credentials, TimeSpan.FromDays(_refreshTTLDays));
+        await _cache.SetAsync(SessionKey(user.ID), credentials, TimeSpan.FromSeconds(_config.AccessTTL));
 
         return credentials;
     }
@@ -75,10 +74,17 @@ public class TokenService : ITokenService
         var user = await _cache.GetAsync<User>(RefreshKey(refreshToken));
         if (user == null) return null;
 
-        await _cache.RemoveAsync(RefreshKey(refreshToken));
         await _cache.RemoveAsync(SessionKey(user.ID));
 
-        var credentials = await CreateCredentials(user);
+        string accessToken = _jwtSvc.CreateToken(user);
+        var credentials = new AuthToken
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            ExpiresIn = DateTime.UtcNow.AddMinutes(_config.AccessTTL)
+        };
+
+        await _cache.SetAsync(SessionKey(user.ID), credentials, TimeSpan.FromSeconds(_config.AccessTTL));
 
         return credentials;
     }

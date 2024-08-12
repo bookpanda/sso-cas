@@ -4,7 +4,6 @@ using backend.Config;
 using backend.DTO;
 using backend.Exceptions;
 using Microsoft.Extensions.Options;
-using System.Net;
 
 namespace backend.Controllers;
 
@@ -33,14 +32,12 @@ public class AuthController : ControllerBase
         try
         {
             var response = await _httpClient.GetAsync(_config.Authority + "/api/v1/auth/validate-st?ticket=" + ticket + "&service=" + _config.Service);
-            _logger.LogInformation("SSO response: {0}", response.StatusCode);
-            _logger.LogInformation("SSO response: {0}", response.Content.ReadAsStringAsync().Result);
             if (!response.IsSuccessStatusCode) return Unauthorized("Invalid ticket");
 
             var session = await response.Content.ReadFromJsonAsync<SessionCAS>();
             if (session == null) return Unauthorized("Invalid session");
 
-            var authToken = await _authSvc.AuthenticateSSO(session.UserID);
+            var authToken = await _authSvc.AuthenticateSSO(session);
 
             return Ok(authToken);
         }

@@ -17,28 +17,28 @@ public class AuthService : IAuthService
         _logger = logger;
     }
 
-    public async Task<AuthToken> AuthenticateSSO(string userCASID)
+    public async Task<AuthToken> AuthenticateSSO(SessionCAS sessionCAS)
     {
         Models.User? user = null;
         try
         {
-            user = await _userService.FindOne(userCASID);
+            user = await _userService.FindOne(sessionCAS.UserID);
         }
         catch (ServiceException ex)
         {
             if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                _logger.LogInformation($"User with id {userCASID} not found, creating new user");
+                _logger.LogInformation($"User with id {sessionCAS.UserID} not found, creating new user");
 
-                var newUser = new CreateUserDTO { CASID = userCASID };
+                var newUser = new CreateUserDTO { CASID = sessionCAS.UserID };
                 var createdUser = await _userService.Create(newUser);
 
-                var newAuthToken = await _tokenService.GetCredentials(createdUser);
+                var newAuthToken = await _tokenService.GetCredentials(createdUser, sessionCAS.ExpiresAt);
                 return newAuthToken;
             }
         }
 
-        var authToken = await _tokenService.GetCredentials(user!);
+        var authToken = await _tokenService.GetCredentials(user!, sessionCAS.ExpiresAt);
         return authToken;
     }
 }
