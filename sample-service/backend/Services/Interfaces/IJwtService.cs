@@ -1,3 +1,5 @@
+
+using System.Security.Claims;
 using backend.Models;
 
 namespace backend.Interfaces;
@@ -5,5 +7,5 @@ namespace backend.Interfaces;
 public interface IJwtService
 {
     string CreateToken(User user);
-    bool ValidateToken(string token);
+    ClaimsPrincipal? ValidateToken(string token);
 }

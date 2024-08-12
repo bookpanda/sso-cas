@@ -23,8 +23,8 @@ public class JwtService : IJwtService
     {
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? throw new InvalidOperationException("User Email is missing")),
-            // new Claim(JwtRegisteredClaimNames.GivenName, user.UserName ?? throw new InvalidOperationException("User Name is missing")),
+            new Claim("email", user.Email ?? throw new InvalidOperationException("User Email is missing")),
+            new Claim("userID", user.ID ?? throw new InvalidOperationException("User Name is missing")),
         };
 
         var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
@@ -47,12 +47,12 @@ public class JwtService : IJwtService
         return tokenHandler.WriteToken(token);
     }
 
-    public bool ValidateToken(string token)
+    public ClaimsPrincipal? ValidateToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         try
         {
-            tokenHandler.ValidateToken(token, new TokenValidationParameters
+            var claims = tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuer = true,
                 ValidIssuer = _config["JWT:Issuer"],
@@ -63,12 +63,12 @@ public class JwtService : IJwtService
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = _key,
             }, out var validatedToken);
+
+            return claims;
         }
         catch
         {
-            return false;
+            return null;
         }
-
-        return true;
     }
 }

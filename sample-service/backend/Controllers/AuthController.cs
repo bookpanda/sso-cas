@@ -27,14 +27,9 @@ public class AuthController : ControllerBase
 
     [HttpPost("auth-sso")]
     public async Task<IActionResult> AuthenticateSSO([FromQuery] string ticket)
-    {
+    { // only after redirect from CAS
         try
         {
-            // send request to SSO service
-            // get user data   
-            // create user
-            // create token
-            // return token
             var response = await _httpClient.GetAsync(_config.Authority + "/api/v1/validate-st?ticket=" + ticket);
             if (!response.IsSuccessStatusCode) return Unauthorized("Invalid ticket");
 
@@ -67,6 +62,26 @@ public class AuthController : ControllerBase
         catch (ServiceException ex)
         {
             _logger.LogError(ex, "Error refreshing token");
+            return StatusCode((int)ex.StatusCode, ex.Message);
+        }
+    }
+
+    public async Task<IActionResult> Validate([FromHeader(Name = "Authorization")] string authHeader)
+    {
+        var accessToken = authHeader?.Split(" ").Last();
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            return BadRequest("Authorization header is missing.");
+        }
+
+        try
+        {
+            var creds = await _tokenSvc.ValidateToken(accessToken);
+            return Ok(creds);
+        }
+        catch (ServiceException ex)
+        {
+            _logger.LogError(ex, "Error validating token");
             return StatusCode((int)ex.StatusCode, ex.Message);
         }
     }

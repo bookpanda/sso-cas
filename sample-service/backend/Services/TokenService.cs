@@ -3,6 +3,8 @@ using backend.Models;
 using backend.Repositories.Interfaces;
 using backend.Interfaces;
 using backend.DTO;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace backend.Services;
 
@@ -29,8 +31,8 @@ public class TokenService : ITokenService
             session = await CreateCredentials(user);
         }
 
-        var isTokenValid = _jwtSvc.ValidateToken(session.AccessToken);
-        if (!isTokenValid)
+        var claims = _jwtSvc.ValidateToken(session.AccessToken);
+        if (claims == null)
         {
             await _cache.RemoveAsync(SessionKey(user.ID));
             string accessToken = _jwtSvc.CreateToken(user);
@@ -79,6 +81,23 @@ public class TokenService : ITokenService
         var credentials = await CreateCredentials(user);
 
         return credentials;
+    }
+
+    public async Task<Credentials?> ValidateToken(string accessToken)
+    {
+        var claims = _jwtSvc.ValidateToken(accessToken);
+        if (claims == null) return null;
+
+        var userID = claims.FindFirstValue("userID") ?? throw new InvalidOperationException("User ID is missing");
+
+        var session = await _cache.GetAsync<AuthToken>(SessionKey(userID));
+        if (session == null) return null;
+
+        return new Credentials
+        {
+            UserID = userID,
+            Role = "user",
+        };
     }
 
     private string CreateRefreshToken()
