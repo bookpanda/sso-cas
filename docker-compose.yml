@@ -30,6 +30,18 @@ services:
       - service_postgres:/var/lib/postgresql/data
     ports:
       - "5433:5432"
+  
+  service_cache:
+    image: redis
+    container_name: service_cache
+    restart: unless-stopped
+    environment:
+      REDIS_HOST: localhost
+      REDIS_PASSWORD: "5678"
+    networks:
+      - service
+    ports:
+      - "6379:6379"
 
 networks:
   cas:
