@@ -79,10 +79,10 @@ func (h *handlerImpl) ValidateST(c context.Ctx) {
 		return
 	}
 
-	token, err := c.Cookie("CASTGC")
-	if err != nil {
-		h.log.Error("ValidateST: ", zap.Error(err))
-		c.UnauthorizedError("'CASTGC' HTTP only cookie not found")
+	service := c.Query("service")
+	if serviceTicketToken == "" {
+		h.log.Error("ValidateST: query parameter 'service' not found")
+		c.BadRequestError("query parameter 'service' not found")
 		return
 	}
 
@@ -92,15 +92,15 @@ func (h *handlerImpl) ValidateST(c context.Ctx) {
 		return
 	}
 
-	_, apperr = h.ticketSvc.DeleteByToken(c.RequestContext(), serviceTicket.Token)
-	if apperr != nil {
-		c.ResponseError(apperr)
+	if service != serviceTicket.ServiceUrl {
+		h.log.Error("ValidateST: 'service' query parameter does not match the service ticket")
+		c.UnauthorizedError("'service' query parameter does not match the service ticket")
 		return
 	}
 
-	if token != serviceTicket.SessionToken {
-		h.log.Error("ValidateST: 'CASTGC' cookie does not match the session token")
-		c.UnauthorizedError("'CASTGC' cookie does not match the session token")
+	_, apperr = h.ticketSvc.DeleteByToken(c.RequestContext(), serviceTicket.Token)
+	if apperr != nil {
+		c.ResponseError(apperr)
 		return
 	}
 
@@ -174,7 +174,7 @@ func (h *handlerImpl) VerifyGoogleLogin(c context.Ctx) {
 		return
 	}
 
-	c.SetCookie("CASTGC", session.Token, 0, "/", "", false, true)
+	c.SetCookie("CASTGC", session.Token, 0, "/", "localhost:3001", false, true)
 
 	c.JSON(200, &dto.ServiceTicketToken{
 		ServiceTicket: serviceTicket.Token,

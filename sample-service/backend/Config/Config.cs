@@ -11,6 +11,7 @@ public class JwtConfig
 public class SSOConfig
 {
     public const string SSO = "SSO";
+    public required string Service { get; set; }
     public required string Authority { get; set; }
     public required string ClientId { get; set; }
 }
