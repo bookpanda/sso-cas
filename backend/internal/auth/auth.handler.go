@@ -79,6 +79,13 @@ func (h *handlerImpl) ValidateST(c context.Ctx) {
 		return
 	}
 
+	token, err := c.Cookie("CASTGC")
+	if err != nil {
+		h.log.Error("ValidateST: ", zap.Error(err))
+		c.UnauthorizedError("'CASTGC' HTTP only cookie not found")
+		return
+	}
+
 	serviceTicket, apperr := h.ticketSvc.FindByToken(c.RequestContext(), serviceTicketToken)
 	if apperr != nil {
 		c.ResponseError(apperr)
@@ -91,15 +98,9 @@ func (h *handlerImpl) ValidateST(c context.Ctx) {
 		return
 	}
 
-	token, err := c.Cookie("CASTGC")
-	if err != nil {
-		h.log.Error("ValidateST: ", zap.Error(err))
-		c.UnauthorizedError("'CASTGC' HTTP only cookie not found")
-		return
-	}
 	if token != serviceTicket.SessionToken {
-		h.log.Error("ValidateST: 'CASTGC' cookie not found or not matching")
-		c.UnauthorizedError("'CASTGC' cookie not found or not matching")
+		h.log.Error("ValidateST: 'CASTGC' cookie does not match the session token")
+		c.UnauthorizedError("'CASTGC' cookie does not match the session token")
 		return
 	}
 
