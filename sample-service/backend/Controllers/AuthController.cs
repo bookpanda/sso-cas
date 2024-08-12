@@ -31,7 +31,7 @@ public class AuthController : ControllerBase
     { // only after redirect from CAS
         try
         {
-            var response = await _httpClient.GetAsync(_config.Authority + "/api/v1/validate-st?ticket=" + ticket);
+            var response = await _httpClient.GetAsync(_config.Authority + "/api/v1/auth/validate-st?ticket=" + ticket);
             if (!response.IsSuccessStatusCode) return Unauthorized("Invalid ticket");
 
             var session = await response.Content.ReadFromJsonAsync<SessionCAS>();

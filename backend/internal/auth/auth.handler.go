@@ -4,7 +4,7 @@ import (
 	"github.com/bookpanda/cas-sso/backend/internal/context"
 	"github.com/bookpanda/cas-sso/backend/internal/dto"
 	"github.com/bookpanda/cas-sso/backend/internal/service_ticket"
-	"github.com/bookpanda/cas-sso/backend/internal/session"
+	_session "github.com/bookpanda/cas-sso/backend/internal/session"
 	"github.com/bookpanda/cas-sso/backend/internal/validator"
 	"go.uber.org/zap"
 )
@@ -18,13 +18,13 @@ type Handler interface {
 
 type handlerImpl struct {
 	svc        Service
-	sessionSvc session.Service
+	sessionSvc _session.Service
 	ticketSvc  service_ticket.Service
 	validate   validator.DtoValidator
 	log        *zap.Logger
 }
 
-func NewHandler(svc Service, sessionSvc session.Service, ticketSvc service_ticket.Service, validate validator.DtoValidator, log *zap.Logger) Handler {
+func NewHandler(svc Service, sessionSvc _session.Service, ticketSvc service_ticket.Service, validate validator.DtoValidator, log *zap.Logger) Handler {
 	return &handlerImpl{
 		svc:        svc,
 		sessionSvc: sessionSvc,
@@ -109,7 +109,7 @@ func (h *handlerImpl) ValidateST(c context.Ctx) {
 		return
 	}
 
-	c.JSON(200, session)
+	c.JSON(200, _session.ModelToDto(session))
 }
 
 func (h *handlerImpl) GetGoogleLoginUrl(c context.Ctx) {
