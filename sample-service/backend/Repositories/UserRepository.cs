@@ -1,5 +1,6 @@
 using backend.Models;
 using backend.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Repositories;
 
@@ -12,9 +13,9 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<User?> FindOne(string id)
+    public async Task<User?> FindOne(string casid)
     {
-        return await _context.Users.FindAsync(id);
+        return await _context.Users.FirstOrDefaultAsync(u => u.CASID == casid);
     }
 
     public async Task<User> Create(User user)

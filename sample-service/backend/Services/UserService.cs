@@ -18,12 +18,12 @@ public class UserService : IUserService
         _logger = logger;
     }
 
-    public async Task<User?> FindOne(string id)
+    public async Task<User?> FindOne(string casid)
     {
-        var user = await _repo.FindOne(id);
+        var user = await _repo.FindOne(casid);
         if (user == null)
         {
-            _logger.LogInformation($"User with id {id} not found");
+            _logger.LogInformation($"User with CASID {casid} not found");
             throw new ServiceException("User not found", HttpStatusCode.NotFound);
         }
 
