@@ -3,6 +3,7 @@ using backend.Services.Interfaces;
 using backend.Config;
 using backend.DTO;
 using backend.Exceptions;
+using Microsoft.Extensions.Options;
 
 namespace backend.Controllers;
 
@@ -16,9 +17,9 @@ public class AuthController : ControllerBase
     private readonly HttpClient _httpClient;
     private readonly ILogger<AuthController> _logger;
 
-    public AuthController(SSOConfig config, IAuthService authSvc, ITokenService tokenSvc, HttpClient httpClient, ILogger<AuthController> logger)
+    public AuthController(IOptions<SSOConfig> config, IAuthService authSvc, ITokenService tokenSvc, HttpClient httpClient, ILogger<AuthController> logger)
     {
-        _config = config;
+        _config = config.Value;
         _authSvc = authSvc;
         _tokenSvc = tokenSvc;
         _httpClient = httpClient;
