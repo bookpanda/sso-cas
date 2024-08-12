@@ -6,7 +6,6 @@ import { DIRECT } from "./constant/constant";
 
 function Home() {
   const googleLoginUrl = useRef("");
-  const serviceTicket = useRef("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,14 +27,12 @@ function Home() {
             return setError(res.message);
           }
 
-          serviceTicket.current = res.data;
+          if (state !== DIRECT)
+            window.location.href = `${state}?ticket=${res.serviceTicket}`;
         } catch {
           return setError("Failed to verify Google login");
         }
       })();
-
-      if (state !== DIRECT)
-        window.location.href = `${state}?ticket=${serviceTicket.current}`;
     }
     if (!state || !code)
       (async () => {
@@ -47,7 +44,7 @@ function Home() {
             return setError(res.message);
           }
 
-          googleLoginUrl.current = res.data;
+          googleLoginUrl.current = res;
         } catch {
           return setError("Failed to get Google login URL");
         }
