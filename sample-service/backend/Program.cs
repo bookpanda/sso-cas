@@ -22,6 +22,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services
     .AddConfig(builder.Configuration)
+    .AddCustomCors(builder.Configuration)
     .AddMyDependencyGroup();
 
 var app = builder.Build();
@@ -33,7 +34,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseRouting();
+app.UseCors("AllowSpecificOrigins");
 app.UseAuthorization();
 
 app.MapHealthChecks("/healthz");

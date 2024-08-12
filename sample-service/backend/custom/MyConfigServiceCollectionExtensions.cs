@@ -16,6 +16,24 @@ public static class MyConfigServiceCollectionExtensions
 
         return services;
     }
+
+    public static IServiceCollection AddCustomCors(this IServiceCollection services, IConfiguration config)
+    {
+        var corsOrigins = config.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowSpecificOrigins",
+                builder =>
+                {
+                    builder.WithOrigins(corsOrigins)
+                           .AllowAnyHeader()
+                           .AllowAnyMethod();
+                });
+        });
+
+        return services;
+    }
+
     public static IServiceCollection AddMyDependencyGroup(
          this IServiceCollection services)
     {
