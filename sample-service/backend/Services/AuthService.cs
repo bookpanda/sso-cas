@@ -16,14 +16,14 @@ public class AuthService : IAuthService
         _logger = logger;
     }
 
-    public async Task<AuthToken> AuthenticateSSO(string userID)
+    public async Task<AuthToken> AuthenticateSSO(string userCASID)
     {
-        var user = await _userService.FindOne(userID);
+        var user = await _userService.FindOne(userCASID);
         if (user == null)
         {
-            _logger.LogInformation($"User with id {userID} not found, creating new user");
+            _logger.LogInformation($"User with id {userCASID} not found, creating new user");
 
-            var newUser = new CreateUserDTO { Email = userID };
+            var newUser = new CreateUserDTO { CASID = userCASID };
             var createdUser = await _userService.Create(newUser);
 
             var newAuthToken = await _tokenService.GetCredentials(createdUser);

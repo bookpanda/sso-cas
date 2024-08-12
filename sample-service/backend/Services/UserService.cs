@@ -34,7 +34,7 @@ public class UserService : IUserService
     {
         var newUser = new User
         {
-            Email = user.Email,
+            CASID = user.CASID,
         };
 
         try

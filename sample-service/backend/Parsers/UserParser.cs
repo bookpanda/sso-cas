@@ -9,6 +9,6 @@ public class UserParser
         new UserDTO
         {
             ID = user.ID ?? string.Empty,
-            Email = user.Email,
+            CASID = user.CASID
         };
 }

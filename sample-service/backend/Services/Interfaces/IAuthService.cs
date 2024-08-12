@@ -4,5 +4,5 @@ namespace backend.Services.Interfaces;
 
 public interface IAuthService
 {
-    Task<AuthToken> AuthenticateSSO(string userID);
+    Task<AuthToken> AuthenticateSSO(string userCASID);
 }

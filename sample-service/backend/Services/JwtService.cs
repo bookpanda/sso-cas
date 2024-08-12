@@ -25,7 +25,7 @@ public class JwtService : IJwtService
     {
         var claims = new List<Claim>
         {
-            new Claim("email", user.Email ?? throw new InvalidOperationException("User Email is missing")),
+            new Claim("userCASID", user.CASID ?? throw new InvalidOperationException("User CASID is missing")),
             new Claim("userID", user.ID ?? throw new InvalidOperationException("User Name is missing")),
         };
 
