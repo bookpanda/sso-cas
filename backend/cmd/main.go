@@ -56,6 +56,7 @@ func main() {
 	r.V1Get("/auth/validate-st", authHdr.ValidateST)
 	r.V1Get("/auth/google-url", authHdr.GetGoogleLoginUrl)
 	r.V1Get("/auth/verify-google", authHdr.VerifyGoogleLogin)
+	r.V1Post("/auth/signout", authHdr.Signout)
 
 	if conf.App.IsDevelopment() {
 		dbHdr := database.NewHandler(db, log)

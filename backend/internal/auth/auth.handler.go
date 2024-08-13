@@ -178,7 +178,7 @@ func (h *handlerImpl) VerifyGoogleLogin(c context.Ctx) {
 		return
 	}
 
-	c.SetCookie("CASTGC", session.Token, h.conf.SessionTTL, "/", "localhost:3001", false, true)
+	c.SetCookie("CASTGC", session.Token, h.conf.SessionTTL, "/", "localhost", false, true)
 
 	c.JSON(200, &dto.ServiceTicketToken{
 		ServiceTicket: serviceTicket.Token,
@@ -209,4 +209,6 @@ func (h *handlerImpl) Signout(c context.Ctx) {
 			c.ResponseError(apperr)
 		}
 	}
+
+	c.JSON(200, nil)
 }

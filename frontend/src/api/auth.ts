@@ -1,8 +1,28 @@
 import { AxiosResponse } from "axios";
 import { DIRECT } from "../constant/constant";
 import { apiClient } from "./axios";
-import { VerifyGoogleLoginDTO } from "./dto/auth.dto";
-import { parseVerifyGoogleLogin } from "./parser/auth.parser";
+import { CheckSessionDTO, VerifyGoogleLoginDTO } from "./dto/auth.dto";
+import {
+  parseCheckSession,
+  parseVerifyGoogleLogin,
+} from "./parser/auth.parser";
+
+export const checkSession = async () => {
+  try {
+    const res: AxiosResponse<CheckSessionDTO> = await apiClient.get(
+      "/auth/check-session",
+      {
+        params: { service: DIRECT },
+        withCredentials: true,
+      }
+    );
+
+    return parseCheckSession(res.data);
+  } catch {
+    const defaultResp = { serviceTicket: "string" };
+    return defaultResp;
+  }
+};
 
 export const getGoogleLoginUrl = async (serviceUrl: string | null) => {
   try {
@@ -13,7 +33,6 @@ export const getGoogleLoginUrl = async (serviceUrl: string | null) => {
     return res.data;
   } catch (error) {
     console.error("Failed to get Google login URL: ", error);
-
     return Error("Failed to get Google login URL");
   }
 };
@@ -24,13 +43,30 @@ export const verifyGoogleLogin = async (code: string, state: string) => {
       "/auth/verify-google",
       {
         params: { code: code, state: state },
+        withCredentials: true,
       }
     );
 
     return parseVerifyGoogleLogin(res.data);
   } catch (error) {
-    console.error("Failed to get Google login URL: ", error);
+    console.error("Failed to verify Google login: ", error);
 
-    return Error("Failed to get Google login URL");
+    return Error("Failed to verify Google login");
+  }
+};
+
+export const signout = async () => {
+  try {
+    const res: AxiosResponse<null> = await apiClient.post(
+      "/auth/signout",
+      {},
+      { withCredentials: true }
+    );
+
+    return res.data;
+  } catch (error) {
+    console.error("Failed to logout: ", error);
+
+    return Error("Failed to logout");
   }
 };
