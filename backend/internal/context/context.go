@@ -22,6 +22,7 @@ type Ctx interface {
 	PostForm(key string) string
 	Cookie(key string) (string, error)
 	SetCookie(key, value string, maxAge int, path, domain string, secure, httpOnly bool)
+	SetString(key, value string)
 	GetString(key string) string
 	GetHeader(key string) string
 	RequestContext() context.Context
@@ -101,6 +102,10 @@ func (c *contextImpl) Cookie(key string) (string, error) {
 
 func (c *contextImpl) SetCookie(key, value string, maxAge int, path, domain string, secure, httpOnly bool) {
 	c.Context.SetCookie(key, value, maxAge, path, domain, secure, httpOnly)
+}
+
+func (c *contextImpl) SetString(key string, value string) {
+	c.Context.Set(key, value)
 }
 
 func (c *contextImpl) GetString(key string) string {
