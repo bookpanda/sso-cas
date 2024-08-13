@@ -47,7 +47,7 @@ func main() {
 	oauthConfig := config.LoadOauthConfig(conf.Oauth)
 	oauthClient := oauth.NewGoogleOauthClient(oauthConfig, log.Named("oauthClient"))
 	authSvc := auth.NewService(oauthConfig, oauthClient, userSvc, log.Named("authSvc"))
-	authHdr := auth.NewHandler(authSvc, sessionSvc, ticketSvc, validate, log)
+	authHdr := auth.NewHandler(&conf.Auth, authSvc, sessionSvc, ticketSvc, validate, log)
 
 	corsHandler := config.MakeCorsConfig(conf)
 	r := router.New(conf, corsHandler)

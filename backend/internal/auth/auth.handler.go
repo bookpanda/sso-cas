@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/bookpanda/cas-sso/backend/config"
 	"github.com/bookpanda/cas-sso/backend/internal/context"
 	"github.com/bookpanda/cas-sso/backend/internal/dto"
 	"github.com/bookpanda/cas-sso/backend/internal/service_ticket"
@@ -14,9 +15,11 @@ type Handler interface {
 	ValidateST(c context.Ctx)
 	GetGoogleLoginUrl(c context.Ctx)
 	VerifyGoogleLogin(c context.Ctx)
+	Signout(c context.Ctx)
 }
 
 type handlerImpl struct {
+	conf       *config.AuthConfig
 	svc        Service
 	sessionSvc _session.Service
 	ticketSvc  service_ticket.Service
@@ -24,8 +27,9 @@ type handlerImpl struct {
 	log        *zap.Logger
 }
 
-func NewHandler(svc Service, sessionSvc _session.Service, ticketSvc service_ticket.Service, validate validator.DtoValidator, log *zap.Logger) Handler {
+func NewHandler(conf *config.AuthConfig, svc Service, sessionSvc _session.Service, ticketSvc service_ticket.Service, validate validator.DtoValidator, log *zap.Logger) Handler {
 	return &handlerImpl{
+		conf:       conf,
 		svc:        svc,
 		sessionSvc: sessionSvc,
 		ticketSvc:  ticketSvc,
@@ -174,9 +178,35 @@ func (h *handlerImpl) VerifyGoogleLogin(c context.Ctx) {
 		return
 	}
 
-	c.SetCookie("CASTGC", session.Token, 0, "/", "localhost:3001", false, true)
+	c.SetCookie("CASTGC", session.Token, h.conf.SessionTTL, "/", "localhost:3001", false, true)
 
 	c.JSON(200, &dto.ServiceTicketToken{
 		ServiceTicket: serviceTicket.Token,
 	})
+}
+
+func (h *handlerImpl) Signout(c context.Ctx) {
+	token, err := c.Cookie("CASTGC")
+	if err != nil {
+		h.log.Error("Signout: ", zap.Error(err))
+		c.UnauthorizedError("'CASTGC' HTTP only cookie not found")
+		return
+	}
+
+	session, apperr := h.sessionSvc.FindByToken(c.RequestContext(), token)
+	if apperr != nil {
+		c.ResponseError(apperr)
+		return
+	}
+
+	// remove cookie
+	c.SetCookie("CASTGC", "", -1, "/", "localhost:3001", false, true)
+
+	for _, service := range h.conf.Services {
+		apperr := h.svc.SignoutService(c.RequestContext(), service, session.UserID.String())
+		if apperr != nil {
+			h.log.Error("Signout: ", zap.Error(apperr))
+			c.ResponseError(apperr)
+		}
+	}
 }

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -17,6 +18,7 @@ import (
 type Service interface {
 	GetGoogleLoginUrl(_ context.Context, serviceUrl string) (string, *apperror.AppError)
 	VerifyGoogleLogin(_ context.Context, req *dto.VerifyGoogleLoginRequest) (*dto.VerifyGoogleLoginResponse, *apperror.AppError)
+	SignoutService(_ context.Context, serviceUrl string, userID string) *apperror.AppError
 }
 
 type serviceImpl struct {
@@ -94,4 +96,22 @@ func (s *serviceImpl) VerifyGoogleLogin(ctx context.Context, req *dto.VerifyGoog
 	}
 
 	return &dto.VerifyGoogleLoginResponse{User: _user.ModelToDto(user)}, nil
+}
+
+func (s *serviceImpl) SignoutService(_ context.Context, serviceUrl string, userID string) *apperror.AppError {
+	params := url.Values{}
+	params.Add("user_id", userID)
+
+	finalURL := fmt.Sprintf("%s?%s", serviceUrl, params.Encode())
+	resp, err := http.Get(finalURL)
+	if err != nil {
+		s.log.Named("SignoutService").Error("Get: ", zap.Error(err))
+		return apperror.InternalServerError("Failed to sign out from service")
+	}
+	if resp.StatusCode != http.StatusOK {
+		s.log.Named("SignoutService").Error("Service returned non-200 status code")
+		return apperror.InternalServerError("Signing out from service did not return 200 status code")
+	}
+
+	return nil
 }

@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"golang.org/x/oauth2"
@@ -12,10 +13,6 @@ import (
 type AppConfig struct {
 	Port string
 	Env  string
-}
-
-type CorsConfig struct {
-	AllowOrigins string
 }
 
 type DbConfig struct {
@@ -31,6 +28,11 @@ type OauthConfig struct {
 type AuthConfig struct {
 	STTTL      int
 	SessionTTL int
+	Services   []string
+}
+
+type CorsConfig struct {
+	AllowOrigins string
 }
 
 type Config struct {
@@ -76,9 +78,12 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	servicesLogoutString := os.Getenv("AUTH_SERVICES_LOGOUT")
+	servicesLogout := strings.Split(servicesLogoutString, ",")
 	authConfig := AuthConfig{
 		STTTL:      int(STTTL),
 		SessionTTL: int(sessionTTL),
+		Services:   servicesLogout,
 	}
 
 	return &Config{
