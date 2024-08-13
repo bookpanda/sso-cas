@@ -19,3 +19,17 @@ export const authenticateSSO = async (serviceTicket: string) => {
     return Error("Failed to authenticate SSO");
   }
 };
+
+export const logout = async (accessToken: string) => {
+  try {
+    const res: AxiosResponse<string> = await apiClient.post("/auth/signout", {
+      access_token: accessToken,
+    });
+
+    return res.data;
+  } catch (error) {
+    console.error("Failed to logout: ", error);
+
+    return Error("Failed to logout");
+  }
+};
