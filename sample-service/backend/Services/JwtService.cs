@@ -39,10 +39,10 @@ public class JwtService : IJwtService
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
+                Issuer = _config.Issuer,
                 IssuedAt = DateTime.Now,
                 Expires = DateTime.Now.AddSeconds(accessTTL),
                 SigningCredentials = creds,
-                Issuer = _config.Issuer
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -66,8 +66,8 @@ public class JwtService : IJwtService
             var claims = tokenHandler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuer = true,
+                ValidateAudience = false,
                 ValidIssuer = _config.Issuer,
-                ValidateAudience = true,
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero,
                 ValidateIssuerSigningKey = true,
@@ -78,8 +78,8 @@ public class JwtService : IJwtService
         }
         catch (Exception ex)
         {
-            _log.LogError(ex, "Error validating JWT token");
-            throw;
+            _log.LogInformation(ex, "Error validating JWT token");
+            return null;
         }
     }
 }
