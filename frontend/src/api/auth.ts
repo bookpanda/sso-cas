@@ -7,19 +7,19 @@ import {
   parseVerifyGoogleLogin,
 } from "./parser/auth.parser";
 
-export const checkSession = async () => {
+export const checkSession = async (serviceUrl: string | null) => {
   try {
     const res: AxiosResponse<CheckSessionDTO> = await apiClient.get(
       "/auth/check-session",
       {
-        params: { service: DIRECT },
+        params: { service: serviceUrl ?? DIRECT },
         withCredentials: true,
       }
     );
 
     return parseCheckSession(res.data);
   } catch {
-    const defaultResp = { serviceTicket: "string" };
+    const defaultResp = { serviceTicket: "" };
     return defaultResp;
   }
 };
@@ -64,9 +64,7 @@ export const signout = async () => {
     );
 
     return res.data;
-  } catch (error) {
-    console.error("Failed to logout: ", error);
-
-    return Error("Failed to logout");
+  } catch {
+    return Error("Failed to signout");
   }
 };

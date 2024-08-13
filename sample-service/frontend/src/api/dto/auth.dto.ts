@@ -3,3 +3,8 @@ export type AuthenticateSSODTO = {
   refresh_token: string;
   expires_in: Date;
 };
+
+export type Credentials = {
+  user_id: string;
+  role: string;
+};

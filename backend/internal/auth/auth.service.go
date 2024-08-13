@@ -103,13 +103,13 @@ func (s *serviceImpl) SignoutService(_ context.Context, serviceUrl string, userI
 	params.Add("user_id", userID)
 
 	finalURL := fmt.Sprintf("%s?%s", serviceUrl, params.Encode())
-	resp, err := http.Get(finalURL)
+	resp, err := http.Post(finalURL, "application/json", nil)
 	if err != nil {
-		s.log.Named("SignoutService").Error("Get: ", zap.Error(err))
+		s.log.Named("SignoutService").Error("Post: ", zap.Error(err))
 		return apperror.InternalServerError("Failed to sign out from service")
 	}
 	if resp.StatusCode != http.StatusOK {
-		s.log.Named("SignoutService").Error("Service returned non-200 status code")
+		s.log.Named("SignoutService").Error("Service returned non-200 status code", zap.Int("status_code", resp.StatusCode))
 		return apperror.InternalServerError("Signing out from service did not return 200 status code")
 	}
 

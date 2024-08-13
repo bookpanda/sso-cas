@@ -1,7 +1,7 @@
 import { AxiosResponse } from "axios";
 import { apiClient } from "./axios";
-import { AuthenticateSSODTO } from "./dto/auth.dto";
-import { parseAuthenticateSSO } from "./parser/auth.parser";
+import { AuthenticateSSODTO, Credentials } from "./dto/auth.dto";
+import { parseAuthenticateSSO, parseCredentials } from "./parser/auth.parser";
 
 export const authenticateSSO = async (serviceTicket: string) => {
   try {
@@ -31,5 +31,24 @@ export const logout = async (accessToken: string) => {
     console.error("Failed to logout: ", error);
 
     return Error("Failed to logout");
+  }
+};
+
+export const validate = async (accessToken: string) => {
+  try {
+    const res: AxiosResponse<Credentials> = await apiClient.get(
+      "/auth/validate",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    return parseCredentials(res.data);
+  } catch (error) {
+    console.error("Failed to validate: ", error);
+
+    return Error("Failed to validate");
   }
 };

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { authenticateSSO, logout } from "./api/auth";
+import { authenticateSSO, logout, validate } from "./api/auth";
 import { SERVICE, SSO_URL, WEB_URL } from "./constant/constant";
 
 function Home() {
@@ -36,8 +36,25 @@ function Home() {
           return setError("Failed to verify Google login");
         }
       })();
+    } else {
+      (async () => {
+        try {
+          const res = await validate(accessToken);
+          setLoading(false);
+
+          if (res instanceof Error) {
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+            setAccessToken("");
+            return;
+          }
+        } catch {
+          console.error("Failed to validate access token");
+          return;
+        }
+      })();
     }
-  }, [serviceTicket, navigate]);
+  }, [serviceTicket, navigate, accessToken]);
 
   const handleClick = () => {
     window.location.href = `${SSO_URL}?service=${WEB_URL}`;
@@ -81,7 +98,7 @@ function Home() {
   };
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
+    <div className="flex h-screen w-screen items-center justify-center bg-blue-100">
       <div className="flex h-[40vh] w-[60vw] flex-col items-center rounded-xl bg-white px-8 py-[10vh] drop-shadow-xl md:w-[40vw] xl:w-[30vw] 2xl:w-[20vw]">
         <h1 className="text-4xl font-bold">{SERVICE}</h1>
         {SSOLoginStatus()}

@@ -26,18 +26,18 @@ public class TokenService : ITokenService
 
     public async Task<AuthToken> GetCredentials(User user, DateTime refreshExpiry)
     {
-        var session = await _cache.GetAsync<AuthToken>(SessionKey(user.ID));
+        var session = await _cache.GetAsync<AuthToken>(SessionKey(user.CASID));
         if (session == null)
         {
-            _log.LogInformation($"User {user.ID} does not have a session, creating new session");
+            _log.LogInformation($"User {user.CASID} does not have a session, creating new session");
             session = await CreateCredentials(user, refreshExpiry);
         }
 
         var claims = _jwtSvc.ValidateToken(session.AccessToken);
         if (claims == null)
         {
-            _log.LogInformation($"User {user.ID} has an invalid access token, creating new session");
-            await RemoveSessionCache(user.ID);
+            _log.LogInformation($"User {user.CASID} has an invalid access token, creating new session");
+            await RemoveSessionCache(user.CASID);
             string accessToken = _jwtSvc.CreateToken(user);
 
             var credentials = new AuthToken
@@ -46,7 +46,7 @@ public class TokenService : ITokenService
                 RefreshToken = session.RefreshToken,
                 ExpiresIn = DateTime.UtcNow.AddSeconds(_config.AccessTTL)
             };
-            await _cache.SetAsync(SessionKey(user.ID), credentials, TimeSpan.FromSeconds(_config.AccessTTL));
+            await _cache.SetAsync(SessionKey(user.CASID), credentials, TimeSpan.FromSeconds(_config.AccessTTL));
 
             return credentials;
         }
@@ -59,7 +59,7 @@ public class TokenService : ITokenService
         var user = await _cache.GetAsync<User>(RefreshKey(refreshToken));
         if (user == null) return null;
 
-        await RemoveSessionCache(user.ID);
+        await RemoveSessionCache(user.CASID);
 
         string accessToken = _jwtSvc.CreateToken(user);
         var credentials = new AuthToken
@@ -69,7 +69,7 @@ public class TokenService : ITokenService
             ExpiresIn = DateTime.UtcNow.AddMinutes(_config.AccessTTL)
         };
 
-        await _cache.SetAsync(SessionKey(user.ID), credentials, TimeSpan.FromSeconds(_config.AccessTTL));
+        await _cache.SetAsync(SessionKey(user.CASID), credentials, TimeSpan.FromSeconds(_config.AccessTTL));
 
         return credentials;
     }
@@ -79,26 +79,35 @@ public class TokenService : ITokenService
         var claims = _jwtSvc.ValidateToken(accessToken);
         if (claims == null) return null;
 
-        var userID = claims.FindFirstValue("userID") ?? throw new InvalidOperationException("User ID is missing");
+        var expiryString = claims.FindFirstValue("exp");
+        long.TryParse(expiryString, out long unixTimestamp);
+        var expiry = DateTimeOffset.FromUnixTimeSeconds(unixTimestamp).DateTime;
+        if (expiry < DateTime.Now.ToUniversalTime())
+        {
+            _log.LogInformation("Token has expired");
+            return null;
+        }
 
-        var session = await _cache.GetAsync<AuthToken>(SessionKey(userID));
+        var userCASID = claims.FindFirstValue("userCASID") ?? throw new InvalidOperationException("User CASID is missing");
+
+        var session = await _cache.GetAsync<AuthToken>(SessionKey(userCASID));
         if (session == null) return null;
 
         return new Credentials
         {
-            UserID = userID,
+            UserID = userCASID,
             Role = "user",
         };
     }
 
-    public async Task<AuthToken?> GetSessionCache(string? userID)
+    public async Task<AuthToken?> GetSessionCache(string? userCASID)
     {
-        return await _cache.GetAsync<AuthToken>(SessionKey(userID));
+        return await _cache.GetAsync<AuthToken>(SessionKey(userCASID));
     }
 
-    public async Task RemoveSessionCache(string? userID)
+    public async Task RemoveSessionCache(string? userCASID)
     {
-        await _cache.RemoveAsync(SessionKey(userID));
+        await _cache.RemoveAsync(SessionKey(userCASID));
     }
 
     public async Task RemoveRefreshCache(string? refreshToken)
@@ -120,7 +129,7 @@ public class TokenService : ITokenService
             ExpiresIn = DateTime.UtcNow.AddSeconds(_config.AccessTTL)
         };
 
-        await _cache.SetAsync(SessionKey(user.ID), credentials, TimeSpan.FromSeconds(_config.AccessTTL));
+        await _cache.SetAsync(SessionKey(user.CASID), credentials, TimeSpan.FromSeconds(_config.AccessTTL));
 
         return credentials;
     }
@@ -135,8 +144,8 @@ public class TokenService : ITokenService
         return $"refresh_{refreshToken}";
     }
 
-    private string SessionKey(string? userID)
+    private string SessionKey(string? userCASID)
     {
-        return $"session_{userID}";
+        return $"session_{userCASID}";
     }
 }

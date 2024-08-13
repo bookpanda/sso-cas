@@ -58,7 +58,7 @@ function Home() {
 
       (async () => {
         try {
-          const res = await checkSession();
+          const res = await checkSession(serviceUrl);
           setLoading(false);
 
           if (res instanceof Error) {
@@ -66,6 +66,8 @@ function Home() {
           }
 
           setServiceTicket(res.serviceTicket);
+          if (serviceUrl && res.serviceTicket)
+            window.location.href = `${serviceUrl}?ticket=${res.serviceTicket}`;
         } catch {
           return setError("Failed to check session");
         }

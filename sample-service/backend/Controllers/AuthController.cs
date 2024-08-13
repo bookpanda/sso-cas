@@ -79,6 +79,12 @@ public class AuthController : ControllerBase
         try
         {
             var creds = await _tokenSvc.ValidateToken(accessToken);
+            if (creds == null)
+            {
+                _log.LogError("Cannot find credentials");
+                return NotFound("Cannot find credentials");
+            }
+
             return Ok(creds);
         }
         catch (ServiceException ex)
@@ -129,7 +135,11 @@ public class AuthController : ControllerBase
 
             // SSO session no longer valid, remove cache
             var authToken = await _tokenSvc.GetSessionCache(userID);
-            if (authToken == null) return NotFound("Cannot find session cache");
+            if (authToken == null)
+            {
+                _log.LogError($"Cannot find session cache for user ID {userID}");
+                return NotFound("Cannot find session cache");
+            }
 
             await _tokenSvc.RemoveSessionCache(userID);
             await _tokenSvc.RemoveRefreshCache(authToken.RefreshToken);
