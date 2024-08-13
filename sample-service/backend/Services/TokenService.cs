@@ -6,6 +6,7 @@ using backend.DTO;
 using System.Security.Claims;
 using backend.Config;
 using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace backend.Services;
 
@@ -33,7 +34,8 @@ public class TokenService : ITokenService
         var claims = _jwtSvc.ValidateToken(session.AccessToken);
         if (claims == null)
         {
-            await _cache.RemoveAsync(SessionKey(user.ID));
+            await RemoveSessionCache(user.ID);
+            // await _cache.RemoveAsync(SessionKey(user.ID));
             string accessToken = _jwtSvc.CreateToken(user);
 
             var credentials = new AuthToken
@@ -50,31 +52,13 @@ public class TokenService : ITokenService
         return session;
     }
 
-    public async Task<AuthToken> CreateCredentials(User user, DateTime refreshExpiry)
-    {
-        string accessToken = _jwtSvc.CreateToken(user);
-        string refreshToken = CreateRefreshToken();
-
-        await _cache.SetAsync(RefreshKey(refreshToken), user, refreshExpiry - DateTime.Now);
-
-        var credentials = new AuthToken
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            ExpiresIn = DateTime.UtcNow.AddSeconds(_config.AccessTTL)
-        };
-
-        await _cache.SetAsync(SessionKey(user.ID), credentials, TimeSpan.FromSeconds(_config.AccessTTL));
-
-        return credentials;
-    }
-
     public async Task<AuthToken?> RefreshToken(string refreshToken)
     {
         var user = await _cache.GetAsync<User>(RefreshKey(refreshToken));
         if (user == null) return null;
 
-        await _cache.RemoveAsync(SessionKey(user.ID));
+        // await _cache.RemoveAsync(SessionKey(user.ID));
+        await RemoveSessionCache(user.ID);
 
         string accessToken = _jwtSvc.CreateToken(user);
         var credentials = new AuthToken
@@ -106,12 +90,46 @@ public class TokenService : ITokenService
         };
     }
 
+    public async Task<AuthToken?> GetSessionCache(string? userID)
+    {
+        return await _cache.GetAsync<AuthToken>(SessionKey(userID));
+    }
+
+    public async Task RemoveSessionCache(string? userID)
+    {
+        await _cache.RemoveAsync(SessionKey(userID));
+    }
+
+    public async Task RemoveRefreshCache(string? refreshToken)
+    {
+        await _cache.RemoveAsync(RefreshKey(refreshToken));
+    }
+
+    private async Task<AuthToken> CreateCredentials(User user, DateTime refreshExpiry)
+    {
+        string accessToken = _jwtSvc.CreateToken(user);
+        string refreshToken = CreateRefreshToken();
+
+        await _cache.SetAsync(RefreshKey(refreshToken), user, refreshExpiry - DateTime.Now);
+
+        var credentials = new AuthToken
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            ExpiresIn = DateTime.UtcNow.AddSeconds(_config.AccessTTL)
+        };
+
+        await _cache.SetAsync(SessionKey(user.ID), credentials, TimeSpan.FromSeconds(_config.AccessTTL));
+
+        return credentials;
+    }
+
     private string CreateRefreshToken()
     {
         return Guid.NewGuid().ToString();
     }
 
-    private string RefreshKey(string refreshToken)
+    private string RefreshKey(string? refreshToken)
     {
         return $"refresh_{refreshToken}";
     }

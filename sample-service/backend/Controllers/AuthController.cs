@@ -4,6 +4,7 @@ using backend.Config;
 using backend.DTO;
 using backend.Exceptions;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace backend.Controllers;
 
@@ -49,13 +50,13 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenBody request)
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenBody req)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
         try
         {
-            var credentials = await _tokenSvc.RefreshToken(request.RefreshToken);
+            var credentials = await _tokenSvc.RefreshToken(req.RefreshToken);
             if (credentials == null) return Unauthorized("Invalid refresh token");
 
             return Ok(credentials);
@@ -87,4 +88,55 @@ public class AuthController : ControllerBase
             return StatusCode((int)ex.StatusCode, ex.Message);
         }
     }
+
+    [HttpPost("signout")]
+    public async Task<IActionResult> Signout([FromBody] SignoutBody req)
+    {
+        try
+        {
+            var creds = await _tokenSvc.ValidateToken(req.AccessToken);
+            if (creds == null) return NotFound("Cannot find credentials");
+
+            var authToken = await _tokenSvc.GetSessionCache(creds.UserID);
+            if (authToken == null) return NotFound("Cannot find session cache");
+
+            await _tokenSvc.RemoveSessionCache(creds.UserID);
+            await _tokenSvc.RemoveRefreshCache(authToken.RefreshToken);
+
+            return Ok(creds);
+        }
+        catch (ServiceException ex)
+        {
+            _logger.LogError(ex, "Error validating token");
+            return StatusCode((int)ex.StatusCode, ex.Message);
+        }
+    }
+
+    // private void SetHttpCookie(string key, string value, DateTime? expiry = null)
+    // {
+    //     var cookieOptions = new CookieOptions
+    //     {
+    //         HttpOnly = true,
+    //         SameSite = SameSiteMode.None,
+    //         Domain = "localhost",
+    //         Path = "/",
+    //     };
+
+    //     if (expiry.HasValue)
+    //     {
+    //         cookieOptions.Expires = expiry.Value;
+    //     }
+
+    //     Response.Cookies.Append(key, value, cookieOptions);
+    // }
+
+    // private string? GetHttpCookie(string key)
+    // {
+    //     if (Request.Cookies.TryGetValue(key, out string? cookieValue))
+    //     {
+    //         return cookieValue;
+    //     }
+
+    //     return null;
+    // }
 }

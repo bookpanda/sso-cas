@@ -27,7 +27,8 @@ public static class MyConfigServiceCollectionExtensions
                 {
                     builder.WithOrigins(corsOrigins)
                            .AllowAnyHeader()
-                           .AllowAnyMethod();
+                           .AllowAnyMethod()
+                           .AllowCredentials();
                 });
         });
 

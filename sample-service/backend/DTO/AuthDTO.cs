@@ -26,6 +26,12 @@ public class RefreshTokenBody
     public required string RefreshToken { get; set; }
 }
 
+public class SignoutBody
+{
+    [JsonPropertyName("access_token")]
+    public required string AccessToken { get; set; }
+}
+
 public class SessionCAS
 {
     [JsonPropertyName("token")]
