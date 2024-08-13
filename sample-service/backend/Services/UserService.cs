@@ -10,24 +10,32 @@ namespace backend.Services;
 public class UserService : IUserService
 {
     private readonly IUserRepository _repo;
-    private readonly ILogger<UserService> _logger;
+    private readonly ILogger<UserService> _log;
 
-    public UserService(IUserRepository repo, ILogger<UserService> logger)
+    public UserService(IUserRepository repo, ILogger<UserService> log)
     {
         _repo = repo;
-        _logger = logger;
+        _log = log;
     }
 
     public async Task<User?> FindOne(string casid)
     {
-        var user = await _repo.FindOne(casid);
-        if (user == null)
+        try
         {
-            _logger.LogInformation($"User with CASID {casid} not found");
-            throw new ServiceException("User not found", HttpStatusCode.NotFound);
-        }
+            var user = await _repo.FindOne(casid);
+            if (user == null)
+            {
+                _log.LogInformation($"User with CASID {casid} not found");
+                throw new ServiceException("User not found", HttpStatusCode.NotFound);
+            }
 
-        return user;
+            return user;
+        }
+        catch (Exception ex)
+        {
+            _log.LogError(ex, $"Error finding user with CASID {casid}");
+            throw new ServiceException("Error finding user", HttpStatusCode.InternalServerError, ex);
+        }
     }
 
     public async Task<User> Create(CreateUserDTO user)

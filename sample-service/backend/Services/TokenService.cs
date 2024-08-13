@@ -6,7 +6,6 @@ using backend.DTO;
 using System.Security.Claims;
 using backend.Config;
 using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace backend.Services;
 
@@ -15,12 +14,14 @@ public class TokenService : ITokenService
     private readonly ICacheRepository _cache;
     private readonly IJwtService _jwtSvc;
     private readonly JwtConfig _config;
+    private readonly ILogger<AuthService> _log;
 
-    public TokenService(ICacheRepository cache, IJwtService jwtSvc, IOptions<JwtConfig> config)
+    public TokenService(ICacheRepository cache, IJwtService jwtSvc, IOptions<JwtConfig> config, ILogger<AuthService> log)
     {
         _cache = cache;
         _jwtSvc = jwtSvc;
         _config = config.Value;
+        _log = log;
     }
 
     public async Task<AuthToken> GetCredentials(User user, DateTime refreshExpiry)
@@ -28,14 +29,15 @@ public class TokenService : ITokenService
         var session = await _cache.GetAsync<AuthToken>(SessionKey(user.ID));
         if (session == null)
         {
+            _log.LogInformation($"User {user.ID} does not have a session, creating new session");
             session = await CreateCredentials(user, refreshExpiry);
         }
 
         var claims = _jwtSvc.ValidateToken(session.AccessToken);
         if (claims == null)
         {
+            _log.LogInformation($"User {user.ID} has an invalid access token, creating new session");
             await RemoveSessionCache(user.ID);
-            // await _cache.RemoveAsync(SessionKey(user.ID));
             string accessToken = _jwtSvc.CreateToken(user);
 
             var credentials = new AuthToken
@@ -57,7 +59,6 @@ public class TokenService : ITokenService
         var user = await _cache.GetAsync<User>(RefreshKey(refreshToken));
         if (user == null) return null;
 
-        // await _cache.RemoveAsync(SessionKey(user.ID));
         await RemoveSessionCache(user.ID);
 
         string accessToken = _jwtSvc.CreateToken(user);

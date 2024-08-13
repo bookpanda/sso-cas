@@ -4,7 +4,6 @@ using backend.Config;
 using backend.DTO;
 using backend.Exceptions;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace backend.Controllers;
 
@@ -16,15 +15,15 @@ public class AuthController : ControllerBase
     private readonly IAuthService _authSvc;
     private readonly ITokenService _tokenSvc;
     private readonly HttpClient _httpClient;
-    private readonly ILogger<AuthController> _logger;
+    private readonly ILogger<AuthController> _log;
 
-    public AuthController(IOptions<SSOConfig> config, IAuthService authSvc, ITokenService tokenSvc, HttpClient httpClient, ILogger<AuthController> logger)
+    public AuthController(IOptions<SSOConfig> config, IAuthService authSvc, ITokenService tokenSvc, HttpClient httpClient, ILogger<AuthController> log)
     {
         _config = config.Value;
         _authSvc = authSvc;
         _tokenSvc = tokenSvc;
         _httpClient = httpClient;
-        _logger = logger;
+        _log = log;
     }
 
     [HttpGet("auth-sso")]
@@ -44,7 +43,7 @@ public class AuthController : ControllerBase
         }
         catch (ServiceException ex)
         {
-            _logger.LogError(ex, "Error authenticating SSO");
+            _log.LogError(ex, "Error authenticating SSO");
             return StatusCode((int)ex.StatusCode, ex.Message);
         }
     }
@@ -63,7 +62,7 @@ public class AuthController : ControllerBase
         }
         catch (ServiceException ex)
         {
-            _logger.LogError(ex, "Error refreshing token");
+            _log.LogError(ex, "Error refreshing token");
             return StatusCode((int)ex.StatusCode, ex.Message);
         }
     }
@@ -84,7 +83,7 @@ public class AuthController : ControllerBase
         }
         catch (ServiceException ex)
         {
-            _logger.LogError(ex, "Error validating token");
+            _log.LogError(ex, "Error validating token");
             return StatusCode((int)ex.StatusCode, ex.Message);
         }
     }
@@ -95,10 +94,18 @@ public class AuthController : ControllerBase
         try
         {
             var creds = await _tokenSvc.ValidateToken(req.AccessToken);
-            if (creds == null) return NotFound("Cannot find credentials");
+            if (creds == null)
+            {
+                _log.LogError("Cannot find credentials");
+                return NotFound("Cannot find credentials");
+            }
 
             var authToken = await _tokenSvc.GetSessionCache(creds.UserID);
-            if (authToken == null) return NotFound("Cannot find session cache");
+            if (authToken == null)
+            {
+                _log.LogError("Cannot find session cache");
+                return NotFound("Cannot find session cache");
+            }
 
             await _tokenSvc.RemoveSessionCache(creds.UserID);
             await _tokenSvc.RemoveRefreshCache(authToken.RefreshToken);
@@ -107,7 +114,31 @@ public class AuthController : ControllerBase
         }
         catch (ServiceException ex)
         {
-            _logger.LogError(ex, "Error validating token");
+            _log.LogError(ex, "Error validating token");
+            return StatusCode((int)ex.StatusCode, ex.Message);
+        }
+    }
+
+    [HttpPost("sso-signout")]
+    public async Task<IActionResult> SSOSignout([FromQuery(Name = "user_id")] string userID)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync(_config.Authority + "/api/v1/auth/check-session?service=" + _config.Service);
+            if (response.IsSuccessStatusCode) return Unauthorized("SSO session still valid");
+
+            // SSO session no longer valid, remove cache
+            var authToken = await _tokenSvc.GetSessionCache(userID);
+            if (authToken == null) return NotFound("Cannot find session cache");
+
+            await _tokenSvc.RemoveSessionCache(userID);
+            await _tokenSvc.RemoveRefreshCache(authToken.RefreshToken);
+
+            return Ok();
+        }
+        catch (ServiceException ex)
+        {
+            _log.LogError(ex, "Error validating token");
             return StatusCode((int)ex.StatusCode, ex.Message);
         }
     }
