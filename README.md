@@ -1,1 +1,1 @@
-# cas-sso
+# SSO: Central Authentication Service
