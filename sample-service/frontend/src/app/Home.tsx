@@ -42,7 +42,7 @@ function Home() {
       return (
         <>
           <h3 className="mt-4 text-2xl font-medium">Logged in as</h3>
-          <p className="mt-1">{credentials.userId}</p>
+          <p className="mt-1">{credentials.email}</p>
           <button
             onClick={handleLogout}
             className="mt-8 flex w-[80%] items-center justify-center rounded-lg border border-gray-300 py-2 text-lg text-gray-600 duration-300 ease-in-out hover:bg-slate-100"

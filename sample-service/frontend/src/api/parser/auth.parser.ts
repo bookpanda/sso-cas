@@ -16,6 +16,7 @@ export const parseAuthenticateSSO = (dto: AuthenticateSSODTO): AuthToken => {
 export const parseCredentials = (dto: ValidateDTO): Credentials => {
   return {
     userId: dto.user_id,
+    email: dto.email,
     role: dto.role,
   };
 };

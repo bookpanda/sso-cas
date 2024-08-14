@@ -12,10 +12,12 @@ export interface AuthToken {
 
 export type ValidateDTO = {
   user_id: string;
+  email: string;
   role: string;
 };
 
 export type Credentials = {
   userId: string;
+  email: string;
   role: string;
 };

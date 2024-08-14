@@ -22,6 +22,7 @@ export const useAuthSSO = (serviceTicket: string | null): AuthSSOPayload => {
   const [authToken, setAuthToken] = useState<AuthToken>(initState);
   const [credentials, setCredentials] = useState<Credentials>({
     userId: "",
+    email: "",
     role: "",
   });
   const [loading, setLoading] = useState(false);
