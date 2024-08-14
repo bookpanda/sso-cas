@@ -33,9 +33,9 @@ function Home() {
             return setError(res.message);
           }
 
-          navigate("/");
           if (state !== DIRECT)
             window.location.href = `${state}?ticket=${res.serviceTicket}`;
+          else navigate("/");
         } catch {
           return setError("Failed to verify Google login");
         }
