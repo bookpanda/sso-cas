@@ -1,16 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  checkSession,
-  getGoogleLoginUrl,
-  signout,
-  verifyGoogleLogin,
-} from "../api/auth";
+import { checkSession, signout, verifyGoogleLogin } from "../api/auth";
 import { DIRECT } from "../constant/constant";
+import { useGetGoogleLogin } from "../hooks/useGetGoogleLogin";
 
 function Home() {
-  const googleLoginUrl = useRef("");
   const [serviceTicket, setServiceTicket] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,6 +16,12 @@ function Home() {
   const serviceUrl = queryParams.get("service");
   const state = queryParams.get("state");
   const code = queryParams.get("code");
+
+  const {
+    googleLoginUrl,
+    loading: ggLoading,
+    error: ggError,
+  } = useGetGoogleLogin(serviceUrl);
 
   useEffect(() => {
     if (code && state) {
@@ -43,21 +44,6 @@ function Home() {
     } else if (!state || !code) {
       (async () => {
         try {
-          const res = await getGoogleLoginUrl(serviceUrl);
-          setLoading(false);
-
-          if (res instanceof Error) {
-            return setError(res.message);
-          }
-
-          googleLoginUrl.current = res;
-        } catch {
-          return setError("Failed to get Google login URL");
-        }
-      })();
-
-      (async () => {
-        try {
           const res = await checkSession(serviceUrl);
           setLoading(false);
 
@@ -76,8 +62,8 @@ function Home() {
   }, [serviceUrl, state, code, navigate]);
 
   const handleClick = () => {
-    if (loading) return;
-    window.location.href = googleLoginUrl.current;
+    if (ggLoading) return;
+    window.location.href = googleLoginUrl;
   };
 
   const handleSignout = async () => {
@@ -124,6 +110,7 @@ function Home() {
         {SSOLoginStatus()}
         {loading && <p className="mt-4 text-gray-500">Loading...</p>}
         {error && <p className="mt-4 text-red-500">{error}</p>}
+        {ggError && <p className="mt-4 text-red-500">{ggError.message}</p>}
       </div>
     </div>
   );
