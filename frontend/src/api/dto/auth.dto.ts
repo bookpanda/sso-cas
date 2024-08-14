@@ -5,3 +5,7 @@ export type CheckSessionDTO = {
 export type VerifyGoogleLoginDTO = {
   service_ticket: string;
 };
+
+export type ServiceTicket = {
+  serviceTicket: string;
+};
