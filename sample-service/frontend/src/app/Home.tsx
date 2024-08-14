@@ -1,83 +1,48 @@
-import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { authenticateSSO, logout, validate } from "../api/auth";
+import { logout } from "../api/auth";
 import { SERVICE, SSO_URL, WEB_URL } from "../constant/constant";
+import { useAuthSSO } from "../hooks/useAuthSSO";
 
 function Home() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const location = useLocation();
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
-  const serviceTicket = queryParams.get("ticket");
+  const serviceTicket = queryParams.get("ticket") || "";
 
-  const [accessToken, setAccessToken] = useState(
-    localStorage.getItem("access_token") || ""
-  );
+  const { setAuthToken, authToken, credentials, loading, error } =
+    useAuthSSO(serviceTicket);
 
-  useEffect(() => {
-    if (serviceTicket) {
-      (async () => {
-        try {
-          const res = await authenticateSSO(serviceTicket);
-          setLoading(false);
-
-          if (res instanceof Error) {
-            return setError(res.message);
-          }
-
-          localStorage.setItem("access_token", res.accessToken);
-          localStorage.setItem("refresh_token", res.refreshToken);
-          setAccessToken(res.accessToken);
-          navigate("/");
-          console.log(res);
-        } catch {
-          return setError("Failed to verify Google login");
-        }
-      })();
-    } else {
-      (async () => {
-        try {
-          const res = await validate(accessToken);
-          setLoading(false);
-
-          if (res instanceof Error) {
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("refresh_token");
-            setAccessToken("");
-            return;
-          }
-        } catch {
-          console.error("Failed to validate access token");
-          return;
-        }
-      })();
-    }
-  }, [serviceTicket, navigate, accessToken]);
+  if (serviceTicket) {
+    navigate("/");
+  }
 
   const handleClick = () => {
     window.location.href = `${SSO_URL}?service=${WEB_URL}`;
   };
 
   const handleLogout = async () => {
-    if (!accessToken) return;
+    if (!authToken.accessToken) return;
 
     try {
-      await logout(accessToken);
+      await logout(authToken.accessToken);
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
-      setAccessToken("");
+      localStorage.removeItem("expires_in");
+      setAuthToken((prev) => ({
+        ...prev,
+        accessToken: "",
+      }));
     } catch (error) {
       console.error("Failed to logout: ", error);
     }
   };
 
   const SSOLoginStatus = () => {
-    if (accessToken)
+    if (authToken.accessToken)
       return (
         <>
-          <h3 className="mt-4 text-2xl font-medium">Logged in</h3>
+          <h3 className="mt-4 text-2xl font-medium">Logged in as</h3>
+          <p className="mt-1">{credentials.userId}</p>
           <button
             onClick={handleLogout}
             className="mt-8 flex w-[80%] items-center justify-center rounded-lg border border-gray-300 py-2 text-lg text-gray-600 duration-300 ease-in-out hover:bg-slate-100"
@@ -104,7 +69,7 @@ function Home() {
         {SSOLoginStatus()}
 
         {loading && <p className="mt-4 text-gray-500">Loading...</p>}
-        {error && <p className="mt-4 text-red-500">{error}</p>}
+        {error && <p className="mt-4 text-red-500">{error.message}</p>}
       </div>
     </div>
   );

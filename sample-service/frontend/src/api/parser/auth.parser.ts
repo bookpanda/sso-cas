@@ -1,6 +1,11 @@
-import { AuthenticateSSODTO, Credentials } from "../dto/auth.dto";
+import {
+  AuthenticateSSODTO,
+  AuthToken,
+  Credentials,
+  ValidateDTO,
+} from "../dto/auth.dto";
 
-export const parseAuthenticateSSO = (dto: AuthenticateSSODTO) => {
+export const parseAuthenticateSSO = (dto: AuthenticateSSODTO): AuthToken => {
   return {
     accessToken: dto.access_token,
     refreshToken: dto.refresh_token,
@@ -8,7 +13,7 @@ export const parseAuthenticateSSO = (dto: AuthenticateSSODTO) => {
   };
 };
 
-export const parseCredentials = (dto: Credentials) => {
+export const parseCredentials = (dto: ValidateDTO): Credentials => {
   return {
     userId: dto.user_id,
     role: dto.role,

@@ -4,7 +4,18 @@ export type AuthenticateSSODTO = {
   expires_in: Date;
 };
 
-export type Credentials = {
+export interface AuthToken {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: Date;
+}
+
+export type ValidateDTO = {
   user_id: string;
+  role: string;
+};
+
+export type Credentials = {
+  userId: string;
   role: string;
 };

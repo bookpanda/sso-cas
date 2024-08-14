@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
 import { apiClient } from "./axios";
-import { AuthenticateSSODTO, Credentials } from "./dto/auth.dto";
+import { AuthenticateSSODTO, ValidateDTO } from "./dto/auth.dto";
 import { parseAuthenticateSSO, parseCredentials } from "./parser/auth.parser";
 
 export const authenticateSSO = async (serviceTicket: string) => {
@@ -20,23 +20,9 @@ export const authenticateSSO = async (serviceTicket: string) => {
   }
 };
 
-export const logout = async (accessToken: string) => {
-  try {
-    const res: AxiosResponse<string> = await apiClient.post("/auth/signout", {
-      access_token: accessToken,
-    });
-
-    return res.data;
-  } catch (error) {
-    console.error("Failed to logout: ", error);
-
-    return Error("Failed to logout");
-  }
-};
-
 export const validate = async (accessToken: string) => {
   try {
-    const res: AxiosResponse<Credentials> = await apiClient.get(
+    const res: AxiosResponse<ValidateDTO> = await apiClient.get(
       "/auth/validate",
       {
         headers: {
@@ -50,5 +36,19 @@ export const validate = async (accessToken: string) => {
     console.error("Failed to validate: ", error);
 
     return Error("Failed to validate");
+  }
+};
+
+export const logout = async (accessToken: string) => {
+  try {
+    const res: AxiosResponse<string> = await apiClient.post("/auth/signout", {
+      access_token: accessToken,
+    });
+
+    return res.data;
+  } catch (error) {
+    console.error("Failed to logout: ", error);
+
+    return Error("Failed to logout");
   }
 };
