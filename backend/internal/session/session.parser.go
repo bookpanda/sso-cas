@@ -9,7 +9,8 @@ func ModelToDto(in *model.Session) *dto.Session {
 	return &dto.Session{
 		Token:     in.Token,
 		UserID:    in.UserID.String(),
-		Payload:   in.Payload,
+		Email:     in.Email,
+		Role:      in.Role,
 		ExpiresAt: in.ExpiresAt,
 	}
 }

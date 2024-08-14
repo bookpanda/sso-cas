@@ -72,6 +72,7 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateUserRequest) (*
 
 	createUser := &model.User{
 		Email: req.Email,
+		Role:  "user",
 	}
 
 	if err := s.repo.Create(createUser); err != nil {
