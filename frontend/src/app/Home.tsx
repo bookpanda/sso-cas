@@ -1,6 +1,8 @@
 import { FcGoogle } from "react-icons/fc";
 import { useLocation } from "react-router-dom";
 import { signout } from "../api/auth";
+import { Button } from "../components/Button";
+import { SERVICES_URL } from "../constant/constant";
 import { useAuthSSO } from "../hooks/useAuthSSO";
 import { useGetGoogleLogin } from "../hooks/useGetGoogleLogin";
 
@@ -42,28 +44,27 @@ function Home() {
         <>
           <h3 className="mt-4 text-2xl font-medium">Logged in as</h3>
           <p className="mt-1">{credentials.email}</p>
-          <button
-            onClick={handleSignout}
-            className="mt-8 flex w-[80%] items-center justify-center rounded-lg border border-gray-300 py-2 text-lg text-gray-600 duration-300 ease-in-out hover:bg-slate-100"
-          >
-            <h3>Logout</h3>
-          </button>
+          <Button onClick={handleSignout}>Logout</Button>
+          <div className="flex w-[80%] space-x-4">
+            {SERVICES_URL.map((url, idx) => (
+              <Button onClick={() => window.open(url, "_blank")}>
+                Service {idx + 1}
+              </Button>
+            ))}
+          </div>
         </>
       );
 
     return (
-      <button
-        onClick={handleClick}
-        className="mt-8 flex items-center justify-center rounded-lg border border-gray-300 px-[30%] py-2 text-lg text-gray-600 duration-300 ease-in-out hover:bg-slate-100"
-      >
+      <Button onClick={handleClick}>
         <FcGoogle className="mr-2 inline h-8 w-8" /> <h3>Google</h3>
-      </button>
+      </Button>
     );
   };
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-gray-300">
-      <div className="flex h-[40vh] w-[60vw] flex-col items-center rounded-xl bg-white px-8 py-[10vh] drop-shadow-xl md:w-[40vw] xl:w-[30vw] 2xl:w-[20vw]">
+      <div className="flex h-[45vh] w-[60vw] flex-col items-center justify-center rounded-xl bg-white px-8 py-[10vh] drop-shadow-xl md:w-[40vw] xl:w-[30vw] 2xl:w-[20vw]">
         <h1 className="text-4xl font-bold">SSO Login</h1>
         {SSOLoginStatus()}
         {loading && <p className="mt-4 text-gray-500">Loading...</p>}
