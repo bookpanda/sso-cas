@@ -1,3 +1,4 @@
+using System.Net;
 using backend.DTO;
 using backend.Exceptions;
 using backend.Services.Interfaces;
@@ -23,29 +24,26 @@ public class AuthService : IAuthService
         try
         {
             user = await _userService.FindOne(sessionCAS.UserID);
-        }
-        catch (ServiceException ex)
-        {
-            if (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            if (user == null)
             {
                 _log.LogInformation($"User with id {sessionCAS.UserID} not found, creating new user");
 
                 var newUser = new CreateUserDTO { CASID = sessionCAS.UserID };
                 var createdUser = await _userService.Create(newUser);
 
-                var newAuthToken = await _tokenService.GetCredentials(createdUser, sessionCAS.ExpiresAt);
+                var newAuthToken = await _tokenService.GetCredentials(createdUser, sessionCAS);
                 return newAuthToken;
             }
-            else
-            {
-                _log.LogError(ex, $"Error finding user with CASID {sessionCAS.UserID}");
-                throw;
-            }
+        }
+        catch (ServiceException ex)
+        {
+            _log.LogError(ex, $"Error finding user with CASID {sessionCAS.UserID}");
+            throw;
         }
 
         try
         {
-            var authToken = await _tokenService.GetCredentials(user!, sessionCAS.ExpiresAt);
+            var authToken = await _tokenService.GetCredentials(user!, sessionCAS);
             return authToken;
         }
         catch (ServiceException ex)

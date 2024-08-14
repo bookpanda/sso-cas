@@ -26,7 +26,7 @@ public class UserService : IUserService
             if (user == null)
             {
                 _log.LogInformation($"User with CASID {casid} not found");
-                throw new ServiceException("User not found", HttpStatusCode.NotFound);
+                return null;
             }
 
             return user;

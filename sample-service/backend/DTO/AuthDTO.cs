@@ -16,6 +16,8 @@ public class Credentials
 {
     [JsonPropertyName("user_id")]
     public required string UserID { get; set; }
+    [JsonPropertyName("email")]
+    public required string Email { get; set; }
     [JsonPropertyName("role")]
     public required string Role { get; set; }
 }
@@ -38,8 +40,10 @@ public class SessionCAS
     public required string Token { get; set; }
     [JsonPropertyName("user_id")]
     public required string UserID { get; set; }
-    [JsonPropertyName("payload")]
-    public required string Payload { get; set; }
+    [JsonPropertyName("email")]
+    public required string Email { get; set; }
+    [JsonPropertyName("role")]
+    public required string Role { get; set; }
     [JsonPropertyName("expires_at")]
     public required DateTime ExpiresAt { get; set; }
 }
