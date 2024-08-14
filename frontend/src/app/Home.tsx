@@ -6,8 +6,8 @@ import {
   getGoogleLoginUrl,
   signout,
   verifyGoogleLogin,
-} from "./api/auth";
-import { DIRECT } from "./constant/constant";
+} from "../api/auth";
+import { DIRECT } from "../constant/constant";
 
 function Home() {
   const googleLoginUrl = useRef("");
@@ -95,6 +95,8 @@ function Home() {
     if (serviceTicket)
       return (
         <>
+          {/* <h3 className="mt-4 text-2xl font-medium">Logged in as</h3>
+        <p className="mt-1">{credentials.email}</p> */}
           <h3 className="mt-4 text-2xl font-medium">Logged in</h3>
           <button
             onClick={handleSignout}
@@ -116,7 +118,7 @@ function Home() {
   };
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
+    <div className="flex h-screen w-screen items-center justify-center bg-gray-300">
       <div className="flex h-[40vh] w-[60vw] flex-col items-center rounded-xl bg-white px-8 py-[10vh] drop-shadow-xl md:w-[40vw] xl:w-[30vw] 2xl:w-[20vw]">
         <h1 className="text-4xl font-bold">SSO Login</h1>
         {SSOLoginStatus()}
