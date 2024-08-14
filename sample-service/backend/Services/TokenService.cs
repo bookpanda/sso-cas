@@ -24,13 +24,13 @@ public class TokenService : ITokenService
         _log = log;
     }
 
-    public async Task<AuthToken> GetCredentials(User user, DateTime refreshExpiry)
+    public async Task<AuthToken> GetCredentials(User user, SessionCAS sessionCAS)
     {
         var session = await _cache.GetAsync<AuthToken>(SessionKey(user.CASID));
         if (session == null)
         {
             _log.LogInformation($"User {user.CASID} does not have a session, creating new session");
-            session = await CreateCredentials(user, refreshExpiry);
+            session = await CreateCredentials(user, sessionCAS);
         }
 
         var claims = _jwtSvc.ValidateToken(session.AccessToken);
@@ -38,7 +38,7 @@ public class TokenService : ITokenService
         {
             _log.LogInformation($"User {user.CASID} has an invalid access token, creating new session");
             await RemoveSessionCache(user.CASID);
-            string accessToken = _jwtSvc.CreateToken(user);
+            string accessToken = _jwtSvc.CreateToken(user, sessionCAS);
 
             var credentials = new AuthToken
             {
@@ -59,9 +59,24 @@ public class TokenService : ITokenService
         var user = await _cache.GetAsync<User>(RefreshKey(refreshToken));
         if (user == null) return null;
 
+        var authToken = await GetSessionCache(user.CASID);
+        if (authToken == null) return null;
+
+        var claims = _jwtSvc.ValidateToken(authToken.AccessToken);
+        if (claims == null) return null;
+
         await RemoveSessionCache(user.CASID);
 
-        string accessToken = _jwtSvc.CreateToken(user);
+        var oldSession = new SessionCAS
+        {
+            Token = "",
+            UserID = claims.FindFirstValue("userCASID") ?? throw new InvalidOperationException("User CASID is missing"),
+            Email = claims.FindFirstValue("casEmail") ?? throw new InvalidOperationException("casEmail is missing"),
+            Role = claims.FindFirstValue("casRole") ?? throw new InvalidOperationException("casRole is missing"),
+            ExpiresAt = DateTime.UtcNow,
+        };
+
+        string accessToken = _jwtSvc.CreateToken(user, oldSession);
         var credentials = new AuthToken
         {
             AccessToken = accessToken,
@@ -89,6 +104,8 @@ public class TokenService : ITokenService
         }
 
         var userCASID = claims.FindFirstValue("userCASID") ?? throw new InvalidOperationException("User CASID is missing");
+        var email = claims.FindFirstValue("casEmail") ?? throw new InvalidOperationException("casEmail is missing");
+        var role = claims.FindFirstValue("casRole") ?? throw new InvalidOperationException("casRole is missing");
 
         var session = await _cache.GetAsync<AuthToken>(SessionKey(userCASID));
         if (session == null) return null;
@@ -96,7 +113,8 @@ public class TokenService : ITokenService
         return new Credentials
         {
             UserID = userCASID,
-            Role = "user",
+            Email = email,
+            Role = role,
         };
     }
 
@@ -115,12 +133,12 @@ public class TokenService : ITokenService
         await _cache.RemoveAsync(RefreshKey(refreshToken));
     }
 
-    private async Task<AuthToken> CreateCredentials(User user, DateTime refreshExpiry)
+    private async Task<AuthToken> CreateCredentials(User user, SessionCAS session)
     {
-        string accessToken = _jwtSvc.CreateToken(user);
+        string accessToken = _jwtSvc.CreateToken(user, session);
         string refreshToken = CreateRefreshToken();
 
-        await _cache.SetAsync(RefreshKey(refreshToken), user, refreshExpiry - DateTime.Now);
+        await _cache.SetAsync(RefreshKey(refreshToken), user, session.ExpiresAt - DateTime.Now);
 
         var credentials = new AuthToken
         {

@@ -5,7 +5,7 @@ namespace backend.Services.Interfaces;
 
 public interface ITokenService
 {
-    Task<AuthToken> GetCredentials(User user, DateTime refreshExpiry);
+    Task<AuthToken> GetCredentials(User user, SessionCAS sessionCAS);
     Task<AuthToken?> RefreshToken(string refreshToken);
     Task<Credentials?> ValidateToken(string accessToken);
     Task<AuthToken?> GetSessionCache(string? userID);

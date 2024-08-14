@@ -6,6 +6,7 @@ using backend.Interfaces;
 using backend.Models;
 using backend.Config;
 using Microsoft.Extensions.Options;
+using backend.DTO;
 
 namespace backend.Services;
 
@@ -23,14 +24,17 @@ public class JwtService : IJwtService
             _config.Secret ?? throw new InvalidOperationException("JWT Secret is missing")));
     }
 
-    public string CreateToken(User user)
+    public string CreateToken(User user, SessionCAS session)
     {
         try
         {
+            _log.LogInformation($"JWTASS {session.Email}, {session.Role}");
             var claims = new List<Claim>
             {
-                new Claim("userCASID", user.CASID ?? throw new InvalidOperationException("User CASID is missing")),
                 new Claim("userID", user.ID ?? throw new InvalidOperationException("User Name is missing")),
+                new Claim("userCASID", session.UserID ?? throw new InvalidOperationException("User CASID is missing")),
+                new Claim("casEmail", session.Email ?? throw new InvalidOperationException("Email is missing")),
+                new Claim("casRole", session.Role ?? throw new InvalidOperationException("Role is missing")),
             };
 
             var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
