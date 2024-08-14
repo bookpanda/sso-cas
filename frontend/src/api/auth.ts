@@ -1,9 +1,14 @@
 import { AxiosResponse } from "axios";
 import { DIRECT } from "../constant/constant";
 import { apiClient } from "./axios";
-import { CheckSessionDTO, VerifyGoogleLoginDTO } from "./dto/auth.dto";
+import {
+  CheckSessionDTO,
+  ValidateDTO,
+  VerifyGoogleLoginDTO,
+} from "./dto/auth.dto";
 import {
   parseCheckSession,
+  parseCredentials,
   parseVerifyGoogleLogin,
 } from "./parser/auth.parser";
 
@@ -52,6 +57,24 @@ export const verifyGoogleLogin = async (code: string, state: string) => {
     console.error("Failed to verify Google login: ", error);
 
     return Error("Failed to verify Google login");
+  }
+};
+
+export const validateST = async (serviceTicket: string) => {
+  try {
+    const res: AxiosResponse<ValidateDTO> = await apiClient.get(
+      "/auth/validate-st",
+      {
+        params: {
+          ticket: serviceTicket,
+          service: DIRECT,
+        },
+      }
+    );
+
+    return parseCredentials(res.data);
+  } catch {
+    return Error("Failed to validate service ticket");
   }
 };
 

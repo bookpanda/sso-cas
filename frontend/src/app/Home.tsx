@@ -1,13 +1,11 @@
 import { FcGoogle } from "react-icons/fc";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { signout } from "../api/auth";
-import { DIRECT } from "../constant/constant";
 import { useAuthSSO } from "../hooks/useAuthSSO";
 import { useGetGoogleLogin } from "../hooks/useGetGoogleLogin";
 
 function Home() {
   const location = useLocation();
-  const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
   const serviceUrl = queryParams.get("service");
   const state = queryParams.get("state");
@@ -19,18 +17,8 @@ function Home() {
     error: ggError,
   } = useGetGoogleLogin(serviceUrl);
 
-  const { setServiceTicket, serviceTicket, loading, error } = useAuthSSO(
-    code,
-    state,
-    serviceUrl
-  );
-
-  if (code && state) {
-    if (state !== DIRECT)
-      window.location.href = `${state}?ticket=${serviceTicket}`;
-    else navigate("/");
-  } else if (serviceUrl && serviceTicket)
-    window.location.href = `${serviceUrl}?ticket=${serviceTicket}`;
+  const { setServiceTicket, serviceTicket, credentials, loading, error } =
+    useAuthSSO(code, state, serviceUrl);
 
   const handleClick = () => {
     if (ggLoading) return;
@@ -52,9 +40,8 @@ function Home() {
     if (serviceTicket)
       return (
         <>
-          {/* <h3 className="mt-4 text-2xl font-medium">Logged in as</h3>
-        <p className="mt-1">{credentials.email}</p> */}
-          <h3 className="mt-4 text-2xl font-medium">Logged in</h3>
+          <h3 className="mt-4 text-2xl font-medium">Logged in as</h3>
+          <p className="mt-1">{credentials.email}</p>
           <button
             onClick={handleSignout}
             className="mt-8 flex w-[80%] items-center justify-center rounded-lg border border-gray-300 py-2 text-lg text-gray-600 duration-300 ease-in-out hover:bg-slate-100"
