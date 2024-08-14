@@ -159,11 +159,11 @@ public class TokenService : ITokenService
 
     private string RefreshKey(string? refreshToken)
     {
-        return $"refresh_{refreshToken}";
+        return $"{_config.Issuer}_refresh_{refreshToken}";
     }
 
     private string SessionKey(string? userCASID)
     {
-        return $"session_{userCASID}";
+        return $"{_config.Issuer}_session_{userCASID}";
     }
 }
