@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { authenticateSSO, logout, validate } from "./api/auth";
-import { SERVICE, SSO_URL, WEB_URL } from "./constant/constant";
+import { authenticateSSO, logout, validate } from "../api/auth";
+import { SERVICE, SSO_URL, WEB_URL } from "../constant/constant";
 
 function Home() {
   const [loading, setLoading] = useState(false);
