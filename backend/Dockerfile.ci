@@ -1,11 +1,11 @@
 FROM golang:1.22.4-alpine3.20 as builder
 WORKDIR /app
 
-COPY go.mod go.sum ./
+COPY ./backend/go.mod ./backend/go.sum ./
 
 RUN go mod download
 
-COPY . .
+COPY ./backend/. .
 
 RUN go build -o server ./cmd/main.go
 
