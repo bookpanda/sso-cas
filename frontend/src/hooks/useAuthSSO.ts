@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { checkSession, verifyGoogleLogin } from "../api/auth";
 
 interface AuthSSOPayload {
+  setServiceTicket: React.Dispatch<React.SetStateAction<string>>;
   serviceTicket: string;
   loading: boolean;
   error: Error | null;
@@ -41,5 +42,5 @@ export const useAuthSSO = (
     setLoading(false);
   }, [code, state, serviceUrl]);
 
-  return { serviceTicket, loading, error };
+  return { setServiceTicket, serviceTicket, loading, error };
 };

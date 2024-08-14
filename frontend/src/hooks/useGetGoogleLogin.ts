@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { getGoogleLoginUrl } from "../api/auth";
 
 interface GetGoogleLoginPayload {
@@ -10,7 +10,7 @@ interface GetGoogleLoginPayload {
 export const useGetGoogleLogin = (
   serviceUrl: string | null
 ): GetGoogleLoginPayload => {
-  const googleLoginUrl = useRef("");
+  const [googleLoginUrl, setGoogleLoginUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -23,10 +23,10 @@ export const useGetGoogleLogin = (
         return setError(res);
       }
 
-      googleLoginUrl.current = res;
+      setGoogleLoginUrl(res);
     })();
     setLoading(false);
   }, [serviceUrl]);
 
-  return { googleLoginUrl: googleLoginUrl.current, loading, error };
+  return { googleLoginUrl: googleLoginUrl, loading, error };
 };

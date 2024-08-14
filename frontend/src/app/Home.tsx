@@ -1,15 +1,11 @@
-import { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { useLocation, useNavigate } from "react-router-dom";
-import { checkSession, signout, verifyGoogleLogin } from "../api/auth";
+import { signout } from "../api/auth";
 import { DIRECT } from "../constant/constant";
+import { useAuthSSO } from "../hooks/useAuthSSO";
 import { useGetGoogleLogin } from "../hooks/useGetGoogleLogin";
 
 function Home() {
-  const [serviceTicket, setServiceTicket] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const location = useLocation();
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
@@ -23,43 +19,18 @@ function Home() {
     error: ggError,
   } = useGetGoogleLogin(serviceUrl);
 
-  useEffect(() => {
-    if (code && state) {
-      (async () => {
-        try {
-          const res = await verifyGoogleLogin(code, state);
-          setLoading(false);
+  const { setServiceTicket, serviceTicket, loading, error } = useAuthSSO(
+    code,
+    state,
+    serviceUrl
+  );
 
-          if (res instanceof Error) {
-            return setError(res.message);
-          }
-
-          if (state !== DIRECT)
-            window.location.href = `${state}?ticket=${res.serviceTicket}`;
-          else navigate("/");
-        } catch {
-          return setError("Failed to verify Google login");
-        }
-      })();
-    } else if (!state || !code) {
-      (async () => {
-        try {
-          const res = await checkSession(serviceUrl);
-          setLoading(false);
-
-          if (res instanceof Error) {
-            return;
-          }
-
-          setServiceTicket(res.serviceTicket);
-          if (serviceUrl && res.serviceTicket)
-            window.location.href = `${serviceUrl}?ticket=${res.serviceTicket}`;
-        } catch {
-          return setError("Failed to check session");
-        }
-      })();
-    }
-  }, [serviceUrl, state, code, navigate]);
+  if (code && state) {
+    if (state !== DIRECT)
+      window.location.href = `${state}?ticket=${serviceTicket}`;
+    else navigate("/");
+  } else if (serviceUrl && serviceTicket)
+    window.location.href = `${serviceUrl}?ticket=${serviceTicket}`;
 
   const handleClick = () => {
     if (ggLoading) return;
@@ -109,7 +80,7 @@ function Home() {
         <h1 className="text-4xl font-bold">SSO Login</h1>
         {SSOLoginStatus()}
         {loading && <p className="mt-4 text-gray-500">Loading...</p>}
-        {error && <p className="mt-4 text-red-500">{error}</p>}
+        {error && <p className="mt-4 text-red-500">{error.message}</p>}
         {ggError && <p className="mt-4 text-red-500">{ggError.message}</p>}
       </div>
     </div>
