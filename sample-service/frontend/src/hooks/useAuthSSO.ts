@@ -51,6 +51,11 @@ export const useAuthSSO = (serviceTicket: string | null): AuthSSOPayload => {
           localStorage.removeItem("access_token");
           localStorage.removeItem("refresh_token");
           localStorage.removeItem("expires_in");
+          setAuthToken({
+            accessToken: "",
+            refreshToken: "",
+            expiresIn: new Date(),
+          });
           return;
         }
 

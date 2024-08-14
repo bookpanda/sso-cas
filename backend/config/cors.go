@@ -14,7 +14,7 @@ func makeCorsConfig(conf *Config) gin.HandlerFunc {
 	if conf.App.IsDevelopment() {
 		return cors.New(cors.Config{
 			AllowMethods:     []string{"*"},
-			AllowHeaders:     []string{"*"},
+			AllowHeaders:     []string{"*", "content-type"},
 			AllowCredentials: true,
 			MaxAge:           12 * time.Hour,
 			AllowOriginFunc: func(string) bool {
