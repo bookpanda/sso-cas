@@ -29,7 +29,7 @@ func makeCorsConfig(conf *Config) gin.HandlerFunc {
 	return cors.New(cors.Config{
 		AllowOrigins:     allowOrigins,
 		AllowMethods:     []string{"*"},
-		AllowHeaders:     []string{"*"},
+		AllowHeaders:     []string{"*", "content-type"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	})
