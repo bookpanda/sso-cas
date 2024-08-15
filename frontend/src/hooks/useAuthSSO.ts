@@ -53,12 +53,13 @@ export const useAuthSSO = (
         if (serviceUrl && res.serviceTicket)
           // service came to validate session, redirecting back
           window.location.href = `${serviceUrl}?ticket=${res.serviceTicket}`;
-
-        const res2 = await validateST(res.serviceTicket);
-        if (res2 instanceof Error) {
-          return;
+        else {
+          const res2 = await validateST(res.serviceTicket);
+          if (res2 instanceof Error) {
+            return;
+          }
+          setCredentials(res2);
         }
-        setCredentials(res2);
       })();
     setLoading(false);
   }, [code, state, serviceUrl, navigate]);
