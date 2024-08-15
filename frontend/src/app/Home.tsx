@@ -47,7 +47,7 @@ function Home() {
           <Button onClick={handleSignout}>Logout</Button>
           <div className="flex w-[80%] space-x-4">
             {SERVICES_URL.map((url, idx) => (
-              <Button onClick={() => window.open(url, "_blank")}>
+              <Button key={url} onClick={() => window.open(url, "_blank")}>
                 Service {idx + 1}
               </Button>
             ))}
