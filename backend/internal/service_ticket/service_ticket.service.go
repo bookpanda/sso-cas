@@ -68,7 +68,9 @@ func (s *serviceImpl) FindByToken(ctx context.Context, token string) (*model.Ser
 			s.log.Named("FindByToken").Error("DeleteByUserID: ", zap.Error(err))
 			return nil, apperror.InternalServerError(err.Error())
 		}
-		return nil, apperror.NotFoundError("service ticket not found")
+
+		s.log.Named("FindByToken").Error("FindByToken: service ticket already expired")
+		return nil, apperror.NotFoundError("service ticket already expired")
 	}
 
 	return serviceTicket, nil
