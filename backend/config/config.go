@@ -26,10 +26,11 @@ type OauthConfig struct {
 }
 
 type AuthConfig struct {
-	STTTL      int
-	SessionTTL int
-	Services   []string
-	IsHTTPS    bool
+	STTTL        int
+	SessionTTL   int
+	Services     []string
+	IsHTTPS      bool
+	CookieDomain string
 }
 
 type CorsConfig struct {
@@ -82,10 +83,11 @@ func LoadConfig() (*Config, error) {
 	servicesLogoutString := os.Getenv("AUTH_SERVICES_LOGOUT")
 	servicesLogout := strings.Split(servicesLogoutString, ",")
 	authConfig := AuthConfig{
-		STTTL:      int(STTTL),
-		SessionTTL: int(sessionTTL),
-		Services:   servicesLogout,
-		IsHTTPS:    os.Getenv("AUTH_IS_HTTPS") == "true",
+		STTTL:        int(STTTL),
+		SessionTTL:   int(sessionTTL),
+		Services:     servicesLogout,
+		IsHTTPS:      os.Getenv("AUTH_IS_HTTPS") == "true",
+		CookieDomain: os.Getenv("AUTH_COOKIE_DOMAIN"),
 	}
 
 	return &Config{

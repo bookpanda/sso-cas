@@ -179,7 +179,7 @@ func (h *handlerImpl) VerifyGoogleLogin(c context.Ctx) {
 		return
 	}
 
-	c.SetCookie("CASTGC", session.Token, h.conf.SessionTTL, "/", "localhost", h.conf.IsHTTPS, true)
+	c.SetCookie("CASTGC", session.Token, h.conf.SessionTTL, "/", h.conf.CookieDomain, h.conf.IsHTTPS, true)
 
 	c.JSON(200, &dto.ServiceTicketToken{
 		ServiceTicket: serviceTicket.Token,
