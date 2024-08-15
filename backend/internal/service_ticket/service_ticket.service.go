@@ -54,11 +54,16 @@ func (s *serviceImpl) FindByToken(ctx context.Context, token string) (*model.Ser
 
 	localExpire, err := utils.ParseLocalTime(serviceTicket.ExpiresAt)
 	if err != nil {
-		s.log.Named("Create").Error("ParseLocalTime: ", zap.Error(err))
+		s.log.Named("Create").Error("ParseLocalTime localExpire: ", zap.Error(err))
 		return nil, apperror.InternalServerError(err.Error())
 	}
 
-	if localExpire.Before(time.Now()) {
+	localNow, err := utils.ParseLocalTime(time.Now())
+	if err != nil {
+		s.log.Named("Create").Error("ParseLocalTime localNow: ", zap.Error(err))
+		return nil, apperror.InternalServerError(err.Error())
+	}
+	if localExpire.Before(localNow) {
 		if err := s.repo.DeleteByToken(serviceTicket.Token); err != nil {
 			s.log.Named("FindByToken").Error("DeleteByUserID: ", zap.Error(err))
 			return nil, apperror.InternalServerError(err.Error())
@@ -84,9 +89,14 @@ func (s *serviceImpl) Create(ctx context.Context, req *dto.CreateServiceTicketRe
 		return nil, apperr
 	}
 
-	localExpire, err := utils.ParseLocalTime(time.Now().Add(time.Duration(s.conf.STTTL) * time.Second))
+	localNow, err := utils.ParseLocalTime(time.Now())
 	if err != nil {
-		s.log.Named("Create").Error("ParseLocalTime: ", zap.Error(err))
+		s.log.Named("Create").Error("ParseLocalTime localNow: ", zap.Error(err))
+		return nil, apperror.InternalServerError(err.Error())
+	}
+	localExpire, err := utils.ParseLocalTime(localNow.Add(time.Duration(s.conf.STTTL) * time.Second))
+	if err != nil {
+		s.log.Named("Create").Error("ParseLocalTime localExpire: ", zap.Error(err))
 		return nil, apperror.InternalServerError(err.Error())
 	}
 
