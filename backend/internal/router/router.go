@@ -14,9 +14,9 @@ type Router struct {
 }
 
 func New(conf *config.Config, corsHandler config.CorsHandler) *Router {
-	if !conf.App.IsDevelopment() {
-		gin.SetMode(gin.ReleaseMode)
-	}
+	// if !conf.App.IsDevelopment() {
+	// 	gin.SetMode(gin.ReleaseMode)
+	// }
 
 	r := gin.New()
 	r.Use(gin.HandlerFunc(corsHandler))
