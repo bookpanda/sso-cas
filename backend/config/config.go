@@ -29,6 +29,7 @@ type AuthConfig struct {
 	STTTL      int
 	SessionTTL int
 	Services   []string
+	IsHTTPS    bool
 }
 
 type CorsConfig struct {
@@ -84,6 +85,7 @@ func LoadConfig() (*Config, error) {
 		STTTL:      int(STTTL),
 		SessionTTL: int(sessionTTL),
 		Services:   servicesLogout,
+		IsHTTPS:    os.Getenv("AUTH_IS_HTTPS") == "true",
 	}
 
 	return &Config{
