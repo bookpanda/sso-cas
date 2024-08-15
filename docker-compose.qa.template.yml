@@ -1,60 +1,60 @@
 version: "3.9"
 
 services:
-  sso-cas:
+  sso_cas:
     image: ghcr.io/bookpanda/sso-cas:latest
     container_name: sso-cas
     restart: unless-stopped
     environment:
       APP_PORT: 3001
       APP_ENV: production
-      DB_URL: postgres://root:1234@localhost:5432/db
+      DB_URL: postgres://root:1234@cas_db:5432/db
       OAUTH_CLIENT_ID: 
       OAUTH_CLIENT_SECRET: 
       OAUTH_REDIRECT_URI: http://localhost:3000
       AUTH_ST_TTL: 60
       AUTH_SESSION_TTL: 86400
-      AUTH_SERVICES_LOGOUT: http://localhost:5203/api/v1/auth/sso-signout,http://localhost:5204/api/v1/auth/sso-signout
-      CORS_ALLOW_ORIGINS: http://localhost:3000,http://localhost:5203,http://localhost:5204
+      AUTH_SERVICES_LOGOUT: http://sso_svc_1:5203/api/v1/auth/sso-signout,http://sso_svc_2:5204/api/v1/auth/sso-signout
+      CORS_ALLOW_ORIGINS: http://host.docker.internal:3000,http://sso_svc_1:5203,http://sso_svc_2:5204
     networks:
       - sso
     expose:
       - 3001
   
-  sso-svc-1:
+  sso_svc_1:
     image: ghcr.io/bookpanda/sso-sample-service:latest
-    container_name: sso-svc-1
+    container_name: sso_svc_1
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      Cors__AllowedOrigins: "http://localhost:3002"
+      Cors__AllowedOrigins: "http://host.docker.internal:3002"
       Jwt__Secret: "IoYHfGk7q81dUmEy1iMg2cv8bQqHCcwq45XqIsBoQIMfYqcNWv0BLApEoFlgJtG1a"
       Jwt__AccessTTL: 900
       Jwt__Issuer: "service-1"
-      SSO__Service: "http://localhost:3002"
-      SSO__Authority: "http://localhost:3001"
-      ConnectionStrings__Database: "Server=localhost:5433;Database=db;User Id=root;Password=1234;"
-      ConnectionStrings__Redis: "localhost:6379,password=5678"
+      SSO__Service: "http://host.docker.internal:3002"
+      SSO__Authority: "http://sso_cas:3001"
+      ConnectionStrings__Database: "Server=service_db:5433;Database=db;User Id=root;Password=1234;"
+      ConnectionStrings__Redis: "service_cache:6379,password=5678"
       ASPNETCORE_URLS: "http://localhost:5203"
     networks:
       - sso
     expose:
       - 5203
   
-  sso-svc-2:
+  sso_svc_2:
     image: ghcr.io/bookpanda/sso-sample-service:latest
-    container_name: sso-svc-2
+    container_name: sso_svc_2
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      Cors__AllowedOrigins: "http://localhost:3003"
+      Cors__AllowedOrigins: "http://host.docker.internal:3003"
       Jwt__Secret: "IoYHfGk7q81dUmEy1iMg2cv8bQqHCcwq45XqIsBoQIMfYqcNWv0BLApEoFlgJtG1a"
       Jwt__AccessTTL: 900
       Jwt__Issuer: "service-2"
-      SSO__Service: "http://localhost:3003"
-      SSO__Authority: "http://localhost:3001"
-      ConnectionStrings__Database: "Server=localhost:5433;Database=db;User Id=root;Password=1234;"
-      ConnectionStrings__Redis: "localhost:6379,password=5678"
+      SSO__Service: "http://host.docker.internal:3003"
+      SSO__Authority: "http://sso_cas:3001"
+      ConnectionStrings__Database: "Server=service_db:5433;Database=db;User Id=root;Password=1234;"
+      ConnectionStrings__Redis: "service_cache:6379,password=5678"
       ASPNETCORE_URLS: "http://localhost:5204"
     networks:
       - sso
