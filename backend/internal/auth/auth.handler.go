@@ -96,6 +96,7 @@ func (h *handlerImpl) ValidateST(c context.Ctx) {
 		return
 	}
 
+	h.log.Info("ValidateST: ", zap.String("service", service), zap.String("serviceTicket.ServiceUrl", serviceTicket.ServiceUrl))
 	if service != serviceTicket.ServiceUrl {
 		h.log.Error("ValidateST: 'service' query parameter does not match the service ticket")
 		c.UnauthorizedError("'service' query parameter does not match the service ticket")
