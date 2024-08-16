@@ -201,7 +201,7 @@ func (h *handlerImpl) Signout(c context.Ctx) {
 	}
 
 	// remove cookie
-	c.SetCookie("CASTGC", "", -1, "/", "localhost", false, true)
+	c.SetCookie("CASTGC", "", -1, "/", h.conf.CookieDomain, false, true)
 
 	for _, service := range h.conf.Services {
 		apperr := h.svc.SignoutService(c.RequestContext(), service, session.UserID.String())
