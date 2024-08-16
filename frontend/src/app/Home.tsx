@@ -68,7 +68,7 @@ function Home() {
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-gray-300">
-      <div className="flex h-[60vh] w-[80vw] flex-col items-center justify-center rounded-xl bg-white px-8 py-[10vh] drop-shadow-xl md:h-[45vh] md:w-[40vw] xl:w-[30vw] 2xl:w-[20vw]">
+      <div className="flex h-[60vh] w-[80vw] flex-col items-center justify-center rounded-xl bg-white px-8 py-[10vh] drop-shadow-xl md:h-[45vh] md:w-[50vw] lg:w-[40vw] xl:w-[30vw] 2xl:w-[20vw]">
         <h1 className="text-4xl font-bold">SSO Login</h1>
         {SSOLoginStatus()}
         {loading && <p className="mt-4 text-gray-500">Loading...</p>}
