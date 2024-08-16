@@ -55,6 +55,10 @@ If the user is already logged in to CAS, the user can access the service without
 - If it is a logout from CAS, the session in CAS (`session` in database + `CASTGC` cookie) and all the other services' sessions (JWTs) are also destroyed.
 
 ## Setting up
+### Repositories
+-   [CAS](https://github.com/bookpanda/sso-cas)
+-   [Sample service](https://github.com/bookpanda/sso-sample-service)
+
 ### Stack
 -   golang
 -   postgresql
