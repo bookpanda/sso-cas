@@ -45,9 +45,13 @@ function Home() {
           <h3 className="mt-4 text-2xl font-medium">Logged in as</h3>
           <p className="mt-1">{credentials.email}</p>
           <Button onClick={handleSignout}>Logout</Button>
-          <div className="flex w-[80%] space-x-4">
+          <div className="flex w-[80%] flex-col md:flex-row md:space-x-4">
             {SERVICES_URL.map((url, idx) => (
-              <Button key={url} onClick={() => window.open(url, "_blank")}>
+              <Button
+                className="w-full"
+                key={url}
+                onClick={() => window.open(url, "_blank")}
+              >
                 Service {idx + 1}
               </Button>
             ))}
@@ -64,7 +68,7 @@ function Home() {
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-gray-300">
-      <div className="flex h-[45vh] w-[60vw] flex-col items-center justify-center rounded-xl bg-white px-8 py-[10vh] drop-shadow-xl md:w-[40vw] xl:w-[30vw] 2xl:w-[20vw]">
+      <div className="flex h-[60vh] w-[80vw] flex-col items-center justify-center rounded-xl bg-white px-8 py-[10vh] drop-shadow-xl md:h-[45vh] md:w-[40vw] xl:w-[30vw] 2xl:w-[20vw]">
         <h1 className="text-4xl font-bold">SSO Login</h1>
         {SSOLoginStatus()}
         {loading && <p className="mt-4 text-gray-500">Loading...</p>}
